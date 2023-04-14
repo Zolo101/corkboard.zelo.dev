@@ -45,14 +45,14 @@ export const post =  writable<Post>();
 export const posts =  writable<Post[]>([]);
 export const replies =  writable<Reply[]>([]);
 
-export const getPost = (async (id: string) => pb
+export const getPost = (async (id: string): Promise<Post> => pb
     .collection("corkboard_posts")
     .getOne(id))
 
-export const getReplies = (async (id: string) =>  pb
+export const getReplies = (async (id: string): Promise<Reply[]> =>  pb
     .collection("corkboard_replies")
     .getFullList(-1, {filter: `post = "${id}"`}))
 
-export const getPosts = (async () => pb
+export const getPosts = (async (): Promise<Post[]> => pb
     .collection("corkboard_homepage")
     .getFullList(-1, {sort: "-created"}))

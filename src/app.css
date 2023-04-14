@@ -4,6 +4,7 @@
 
 @font-face {
     font-family: 'Lilian';
+    font-display: swap;
     src: url('/fonts/Lilian.ttf') format('truetype');
 }
 

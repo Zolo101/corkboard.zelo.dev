@@ -69,10 +69,10 @@
 <Boilerplate>
     {#if $post}
         <!--{console.log("e", $post)}-->
-        <div class="lg:flex flex-col gap-4 lg:min-w-[400px] lg:w-[30vw]">
+        <div class="lg:flex flex-col gap-4 lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
             <!--{#each data.post as reply}-->
     <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
-             <div class="cb-mask p-5 bg-[#f6dbd9]">
+             <div class="cb-mask p-5 bg-[#f6dbd9] dark:bg-[#4a4241]">
                  <span class="float-left max-sm:text-2xl">Anonymous</span>
                  <span class="float-right max-sm:text-2xl">{new Date($post.created).toLocaleString()}</span>
                  <br>
@@ -89,7 +89,7 @@
                  <span class="max-h-2 mt-5 text-xl">{$post.content}</span>
             </div>
             {#each $replies as reply}
-                <div class="cb-mask p-5 bg-[#f6dbd9]">
+                <div class="cb-mask p-5 bg-[#f6dbd9] dark:bg-[#4a4241]">
                     <span class="float-left max-sm:text-2xl">Anonymous</span>
                     <span class="float-right max-sm:text-2xl">{new Date(reply.created).toLocaleString()}</span>
                     <br>

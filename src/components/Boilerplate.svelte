@@ -86,11 +86,12 @@
                         type="text"
                         name="title"
                         placeholder="Title"
+                        maxlength="128"
                         class="cb-border cb-mask p-5 m-1 text-4xl"
                         on:input={s => $creatingPostTitleText = s.target.value.trim()}
                         required
                 />
-                <textarea type="text" name="content" placeholder="Message" class="cb-border cb-mask p-5 m-1" required/>
+                <textarea type="text" name="content" placeholder="Message" maxlength="4096" class="cb-border cb-mask p-5 m-1" required/>
                 <input
                         type="file"
                         name="files"

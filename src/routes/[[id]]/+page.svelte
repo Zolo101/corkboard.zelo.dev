@@ -54,8 +54,10 @@
 
 <svelte:head>
     {#if $post}
+        {@const sliced = $post.content.length > 200}
+        {@const content = sliced ? $post.content.slice(0, 200) + "(...)" : $post.content}
         <title>corkboard - {$post.title}</title>
-        <meta name="description" content={$post.content.slice(0, 100)}>
+        <meta name="description" content={content}>
         <meta property="og:image" content="./image/{$post.id}">
         <meta name="twitter:card" content="summary_large_image">
     {:else}
@@ -71,10 +73,10 @@
             <!--{#each data.post as reply}-->
     <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
              <div class="cb-mask p-5 bg-[#f6dbd9]">
-                 <span class="float-left">Anonymous</span>
-                 <span class="float-right">{new Date($post.created).toLocaleString()}</span>
+                 <span class="float-left max-sm:text-2xl">Anonymous</span>
+                 <span class="float-right max-sm:text-2xl">{new Date($post.created).toLocaleString()}</span>
                  <br>
-                 <p class="text-4xl">{$post.title}</p>
+                 <p class="text-4xl max-sm:text-6xl">{$post.title}</p>
                  <!--                            <span>{post.created}</span>-->
     <!--                 <p>{post.files}</p>-->
                  <div class="inline">
@@ -88,23 +90,23 @@
             </div>
             {#each $replies as reply}
                 <div class="cb-mask p-5 bg-[#f6dbd9]">
-                    <span class="float-left">Anonymous</span>
-                    <span class="float-right">{new Date(reply.created).toLocaleString()}</span>
+                    <span class="float-left max-sm:text-2xl">Anonymous</span>
+                    <span class="float-right max-sm:text-2xl">{new Date(reply.created).toLocaleString()}</span>
                     <br>
                     {#if reply.file}
                         <a href={getRepliesURLOG(reply.id, reply.file)} class="h-full block">
                             <img src={getRepliesURLFit(reply.id, reply.file)} alt={reply.file} class="inline outline outline-1 m-2"/>
                         </a>
                     {/if}
-                    <p class="text-xl">{reply.content}</p>
+                    <p class="text-xl max-sm:text-3xl">{reply.content}</p>
                 </div>
             {/each}
             <p class="cb-input text-3xl text-center p-2 bg-green-400 hover:bg-green-500" on:click={() => $creatingReply = !$creatingReply}>Reply</p>
             {#if $creatingReply}
                 <form transition:fly={{y: 100}} class="flex flex-col" method="post" enctype="multipart/form-data" on:submit|preventDefault={createReply}>
-                    <textarea type="text" name="content" placeholder="Message" class="cb-border cb-mask p-5 m-1"/>
+                    <textarea type="text" name="content" placeholder="Message" class="cb-border cb-mask text-3xl p-5 m-1"/>
                     <input type="file" name="file" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" class="cb-border cb-mask bg-green-50 p-5 m-1"/>
-                    <input type="submit" value="Submit" class="cb-input bg-green-200 hover:bg-green-300 p-5 m-1"/>
+                    <input type="submit" value="Submit" class="cb-input bg-green-200 hover:bg-green-300 text-3xl p-2 m-1"/>
                 </form>
             {/if}
             <br>

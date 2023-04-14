@@ -307,6 +307,11 @@
         })
 
         searchText.subscribe((text) => {
+            if (text.length === 0) {
+                hovertext.text = "Hover over a post to see its title!"
+                return
+            }
+
             // if (text) {
                 let found = 0
                 let lastFoundPost;

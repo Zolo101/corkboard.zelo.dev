@@ -30,6 +30,7 @@
 		"@pixi/filter-pixelate": "^5.1.1",
 		"@pixi/gif": "^2.1.0",
 		"pixi.js": "^7.2.3",
-		"pocketbase": "^0.13.1"
+		"pocketbase": "^0.13.1",
+		"sharp": "^0.32.0"
 	}
 }

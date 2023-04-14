@@ -52,6 +52,18 @@
     const getRepliesURLOG = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}`;
 </script>
 
+<svelte:head>
+    {#if $post}
+        <title>corkboard - {$post.title}</title>
+        <meta name="description" content={$post.content.slice(0, 100)}>
+        <meta property="og:image" content="./image/{$post.id}">
+        <meta name="twitter:card" content="summary_large_image">
+    {:else}
+        <title>corkboard</title>
+        <meta name="description" content="Create a post and pin it to a board!">
+    {/if}
+</svelte:head>
+
 <Boilerplate>
     {#if $post}
         <!--{console.log("e", $post)}-->

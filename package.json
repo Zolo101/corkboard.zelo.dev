@@ -13,7 +13,7 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/adapter-netlify": "^2.0.6",
-		"@sveltejs/kit": "^1.9.1",
+		"@sveltejs/kit": "^1.15.5",
 		"autoprefixer": "^10.4.13",
 		"postcss": "^8.4.21",
 		"svelte": "^3.55.1",
@@ -30,7 +30,6 @@
 		"@pixi/filter-pixelate": "^5.1.1",
 		"@pixi/gif": "^2.1.0",
 		"pixi.js": "^7.2.3",
-		"pocketbase": "^0.13.1",
-		"sharp": "^0.32.0"
+		"pocketbase": "^0.13.1"
 	}
 }

@@ -58,7 +58,7 @@
         {@const content = sliced ? $post.content.slice(0, 200) + "(...)" : $post.content}
         <title>corkboard - {$post.title}</title>
         <meta name="description" content={content}>
-        <meta property="og:image" content="./image/{$post.id}">
+        <meta property="og:image" content="https://embed.zelo.dev/corkboard-embedgen-sharp?id={$post.id}">
         <meta name="twitter:card" content="summary_large_image">
     {:else}
         <title>corkboard</title>

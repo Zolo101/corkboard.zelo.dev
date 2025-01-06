@@ -10,12 +10,15 @@
 
 html {
     font-family: 'Lilian' !important;
-    background: url("/corkboard/background.png");
 }
 
 
 html, body {
     @apply dark:bg-black h-full max-sm:w-full;
+}
+
+body {
+    background: url("/corkboard/background.png");
 }
 
 @layer base {

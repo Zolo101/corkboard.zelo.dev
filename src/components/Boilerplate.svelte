@@ -12,18 +12,29 @@
         BoardStage,
         creatingPostFormData
     } from "../app";
+
     const createPost = (e) => {
         $creatingPostFormData.set("creator", "4jfbbn1krnrsspo") // Anonymous
 
         const formData = $creatingPostFormData
         console.log($creatingPostFormData.get("x"), $creatingPostFormData.get("y"))
-        const call = pb.collection("corkboard_posts").create(formData)
+        // const call = pb.collection("corkboard_posts").create(formData)
+        const call = fetch("/api/post", {
+            method: "POST",
+            body: formData
+        })
+
+        // log formData in json
+        // console.log(JSON.stringify(Array.from(formData.entries()), 0, 2))
+
+
         $loading = true;
         call
-            .then((result) => {
+            .then(async (result) => {
+                const postId = await result.json();
                 $boardStage = BoardStage.Placed
                 $loading = false
-                $id = result.id
+                $id = postId
             })
             .catch((err) => {
                 console.error(err)
@@ -99,7 +110,7 @@
                         placeholder="Images"
                         class="cb-border cb-mask bg-green-50 p-5 m-1"
                         on:change={s => $creatingPostImageBlob = s.target.files[0]}
-                        required
+                        required={false}
                 />
 <!--                <p>The first image will be used in the corkboard.</p>-->
                 <input type="submit" value="Post!" class="cb-input bg-green-200 hover:bg-green-300 cursor-pointer p-5 mx-24 text-4xl"/>

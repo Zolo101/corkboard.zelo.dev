@@ -15,9 +15,6 @@ html {
 
 html, body {
     @apply dark:bg-black h-full max-sm:w-full;
-}
-
-body {
     background: url("/corkboard/background.png");
 }
 

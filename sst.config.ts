@@ -3,34 +3,35 @@
 export default $config({
     app(input) {
         return {
-          name: "corkboard",
-          removal: input?.stage === "production" ? "retain" : "remove",
-          protect: ["production"].includes(input?.stage),
-          home: "aws",
+            name: "corkboard",
+            removal: input?.stage === "production" ? "retain" : "remove",
+            protect: ["production"].includes(input?.stage),
+            home: "aws",
         };
     },
     async run() {
         // Media S3 Bucket
-        const media = new sst.aws.Bucket("CorkboardMedia", {
-          access: "public"
+        const media = new sst.aws.Bucket("Media", {
+            access: "cloudfront",
         })
 
         // CloudFront CDN
-        new sst.aws.Router("CorkboardRouter", {
+        new sst.aws.Router("CDN", {
             routes: {
-                "/media/*": {
-                    bucket: media
+                "/*": {
+                    bucket: media,
+                    edge: {
+                        viewerResponse: {
+                            // For CORS during local development
+                            injection: "event.response.headers['access-control-allow-origin'] = { value: '*' };"
+                        }
+                    }
                 }
             }
         })
 
-        // Frontend
-        new sst.aws.SvelteKit("Corkboard", {
-            link: [media]
-        });
-
         // Lambda
-        new sst.aws.Function("Corkboard_ThumbnailGenerate", {
+        new sst.aws.Function("ThumbnailGenerate", {
             handler: "src/lambda/ThumbnailGenerate.handler",
             timeout: "3 minutes",
             memory: "1024 MB",
@@ -38,18 +39,61 @@ export default $config({
         })
 
         // Corkboard Posts & Replies
-        new sst.aws.Dynamo("CorkboardMessages", {
-
+        const posts = new sst.aws.Dynamo("Posts", {
+            fields: {
+                postId: "string",
+                replyId: "string",
+                // creatorId: "string",
+                // files: "string[]",
+                // content: "string",
+                // createdAt: "string",
+                // updatedAt: "string",
+            },
+            primaryIndex: { hashKey: "postId", rangeKey: "replyId" },
+            stream: "new-image"
         })
 
+        // Connection table for WebSocket
+        const connections = new sst.aws.Dynamo("Connections", {
+            fields: {
+                connectionId: "string"
+            },
+            primaryIndex: { hashKey: "connectionId" }
+        })
+
+        // WebSocket for Realtime Post & Reply creation
+        const postsWebsocket = new sst.aws.ApiGatewayWebSocket("PostWebSocket")
+        postsWebsocket.route("$connect", {handler: "src/functions/websocket.connect", link: [connections]})
+        postsWebsocket.route("$disconnect", {handler: "src/functions/websocket.disconnect", link: [connections]})
+        posts.subscribe("PostSubscriber", {handler: "src/functions/subscribe.postHandler", link: [connections, postsWebsocket]})
+
+
+        // const replies = new sst.aws.Dynamo("Replies", {
+        //     fields: {
+        //         replyId: "string",
+        //         // postId: "string",
+        //         // creatorId: "string",
+        //         // files: "string[]",
+        //         // content: "string",
+        //         // createdAt: "string",
+        //         // updatedAt: "string",
+        //     },
+        //     primaryIndex: { hashKey: "replyId" },
+        // })
+
         // Anonymous User Pool
-        new sst.aws.CognitoUserPool("CorkboardUserPool", {
+        new sst.aws.CognitoUserPool("UserPool", {
 
         })
 
         // Web Push Notifications
-        new sst.aws.SnsTopic("CorkboardNotifications", {
+        new sst.aws.SnsTopic("Notifications", {
 
         })
+
+        // Frontend
+        new sst.aws.SvelteKit("Site", {
+            link: [media, posts]
+        });
     },
 });

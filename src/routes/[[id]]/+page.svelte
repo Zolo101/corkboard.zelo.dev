@@ -1,44 +1,93 @@
 <script lang="ts">
     import Boilerplate from "../../components/Boilerplate.svelte";
     import { fly } from 'svelte/transition';
-    import { creatingReply, getReplies, id, loading, pb, post, posts, replies} from "../../app";
+    // import { load } from "./+page";
+    // import { creatingReply, getReplies, id, loading, pb, post, posts, replies} from "../../app";
+    import { creatingReply, id, loading, posts, thread } from "../../app";
     import { onMount } from "svelte";
-    import { load } from "./+page";
-    import type { Reply } from "../../app";
+
     export let data;
 
     onMount(() => {
+        console.log(data)
         $id = data.id;
 
+        $posts = data.board;
+
         id.subscribe(async (v) => {
+            if (v === undefined) return;
             $loading = true;
-            let result = await load({params: {id: v}})
-            $post = result.post;
-            $posts = result.posts;
-            $replies = result.replies;
+            let getPost = await fetch(`/api/post?id=${v}`);
+            let result = await getPost.json();
+            $thread = result;
+            // $posts = result.posts;
+            // $replies = result.replies;
             window.history.pushState({}, "", `/${v || ""}`);
             $loading = false;
             console.log("NEW ID", $id)
         })
+
+        // Gives us updates on new posts & replies.
+        const updateWebSocket = new WebSocket("wss://lnw2vlxzti.execute-api.eu-west-2.amazonaws.com/$default");
+        let dead = false;
+        updateWebSocket.onopen = () => {
+            console.log('Connected to WebSocket API');
+            dead = false;
+        };
+        updateWebSocket.onmessage = async (event) => {
+            console.log("WEBSOCKET", event.data);
+            const { newPosts, newReplies }: {newPosts: string[], newReplies: string[]} = JSON.parse(event.data);
+            if (newPosts) {
+                $posts = await (await fetch(`/api/board`)).json();
+            }
+
+            if (newReplies) {
+                for (const newReply of newReplies) {
+                    // TODO: We could optimize this by only messaging users with new replies in the thread currently on by adding a "currentThread" column to the connections table
+                    // Only update if its the current thread
+                    if (newReply.substring(5) === $id) {
+                        $thread = await (await fetch(`/api/post?id=${$id}`)).json();
+                    }
+                }
+                $posts = await (await fetch(`/api/board`)).json();
+            }
+        };
+        updateWebSocket.onclose = () => {
+            console.log('WebSocket connection closed');
+            dead = true;
+        };
+        updateWebSocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+        // Run when the user clicks onto the tab
+        // window.onfocus = () => {
+        //     if (dead) updateWebSocket.
+        // };
     })
 
     const createReply = (f) => {
         const formData = new FormData(f.target);
-        formData.append("post", $id)
-        formData.append("creator", "4jfbbn1krnrsspo")
-        console.log(formData)
+        formData.append("postId", $id)
+        // formData.append("creator", "4jfbbn1krnrsspo")
+        console.log([...formData.entries()])
 
-        const call = pb.collection("corkboard_replies").create(formData)
+        // const call = pb.collection("corkboard_replies").create(formData)
+        const call = fetch("/api/reply", {
+            method: "POST",
+            body: formData
+        })
+
         $loading = true;
         call
-            .then((result) => {
+            .then(async (result) => {
+                $thread = await result.json();
                 // console.log("result", result)
-                getReplies(result.post).then((resultReplies) => {
-                    $replies = resultReplies as Reply[];
-                    // console.log("replies", $replies)
-                    $creatingReply = false
-                    $loading = false
-                })
+            //     getReplies(result.post).then((resultReplies) => {
+            //     $replies = resultReplies as Reply[];
+                // console.log("replies", $replies)
+                $creatingReply = false
+                $loading = false
+            //     })
             })
             .catch((err) => {
                 console.error(err)
@@ -46,19 +95,22 @@
             })
     }
 
-    const getPostURL200 = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=0x200`;
-    const getPostURLOG = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}`;
-    const getRepliesURLFit = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}?thumb=320x240f`;
-    const getRepliesURLOG = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}`;
+    // const getPostURL200 = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=0x200`;
+    // const getPostURLOG = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}`;
+    // const getRepliesURLFit = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}?thumb=320x240f`;
+    // const getRepliesURLOG = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}`;
+
+    const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}?size=200`;
+    const getPostURLOG = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}`;
 </script>
 
 <svelte:head>
-    {#if $post}
-        {@const sliced = $post.content.length > 200}
-        {@const content = sliced ? $post.content.slice(0, 200) + "(...)" : $post.content}
-        <title>corkboard - {$post.title}</title>
+    {#if $thread}
+        {@const sliced = $thread.post.content.length > 200}
+        {@const content = sliced ? $thread.post.content.slice(0, 200) + "(...)" : $thread.post.content}
+        <title>corkboard - {$thread.post.title}</title>
         <meta name="description" content={content}>
-        <meta property="og:image" content="https://embed.zelo.dev/corkboard-embedgen-sharp?id={$post.id}">
+        <meta property="og:image" content="https://embed.zelo.dev/corkboard-embedgen-sharp?id={$thread.post.postId}">
         <meta name="twitter:card" content="summary_large_image">
     {:else}
         <title>corkboard</title>
@@ -67,35 +119,35 @@
 </svelte:head>
 
 <Boilerplate>
-    {#if $post}
+    {#if $thread}
         <!--{console.log("e", $post)}-->
         <div class="lg:flex flex-col gap-4 lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
             <!--{#each data.post as reply}-->
     <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
              <div class="cb-mask p-5 bg-[#f6dbd9] dark:bg-[#4a4241]">
                  <span class="float-left max-sm:text-2xl">Anonymous</span>
-                 <span class="float-right max-sm:text-2xl">{new Date($post.created).toLocaleString()}</span>
+                 <span class="float-right max-sm:text-2xl">{new Date($thread.post.created).toLocaleString()}</span>
                  <br>
-                 <p class="text-4xl max-sm:text-6xl">{$post.title}</p>
+                 <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
                  <!--                            <span>{post.created}</span>-->
     <!--                 <p>{post.files}</p>-->
                  <div class="inline">
-                     {#each $post.files as file}
-                         <a href={getPostURLOG($post.id, file)} class="h-full block">
-                            <img src={getPostURL200($post.id, file)} alt={file} class="inline" style="image-rendering: pixelated"/>
+                     {#each $thread.post.files as file}
+                         <a href={getPostURLOG(file)} class="h-full block">
+                            <img src={getPostURL200(file)} alt={file} class="inline" style="image-rendering: pixelated"/>
                          </a>
                      {/each}
                  </div>
-                 <span class="max-h-2 mt-5 text-xl">{$post.content}</span>
+                 <span class="max-h-2 mt-5 text-xl">{$thread.post.content}</span>
             </div>
-            {#each $replies as reply}
+            {#each $thread.replies as reply}
                 <div class="cb-mask p-5 bg-[#f6dbd9] dark:bg-[#4a4241]">
                     <span class="float-left max-sm:text-2xl">Anonymous</span>
                     <span class="float-right max-sm:text-2xl">{new Date(reply.created).toLocaleString()}</span>
                     <br>
                     {#if reply.file}
-                        <a href={getRepliesURLOG(reply.id, reply.file)} class="h-full block">
-                            <img src={getRepliesURLFit(reply.id, reply.file)} alt={reply.file} class="inline outline outline-1 m-2"/>
+                        <a href={getPostURLOG(reply.file)} class="h-full block">
+                            <img src={getPostURL200(reply.file)} alt={reply.file} class="inline outline outline-1 m-2"/>
                         </a>
                     {/if}
                     <p class="text-xl max-sm:text-3xl">{reply.content}</p>

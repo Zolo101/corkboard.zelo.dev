@@ -6,33 +6,42 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "Corkboard": {
-      "type": "sst.aws.SvelteKit"
-      "url": string
-    }
-    "CorkboardMedia": {
-      "name": string
-      "type": "sst.aws.Bucket"
-    }
-    "CorkboardNotifications": {
-      "arn": string
-      "type": "sst.aws.SnsTopic"
-    }
-    "CorkboardRouter": {
+    "CDN": {
       "type": "sst.aws.Router"
       "url": string
     }
-    "CorkboardUserPool": {
-      "id": string
-      "type": "sst.aws.CognitoUserPool"
+    "Connections": {
+      "name": string
+      "type": "sst.aws.Dynamo"
     }
-    "Corkboard_ThumbnailGenerate": {
+    "Media": {
+      "name": string
+      "type": "sst.aws.Bucket"
+    }
+    "Notifications": {
+      "arn": string
+      "type": "sst.aws.SnsTopic"
+    }
+    "PostWebSocket": {
+      "managementEndpoint": string
+      "type": "sst.aws.ApiGatewayWebSocket"
+      "url": string
+    }
+    "Posts": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
+    "Site": {
+      "type": "sst.aws.SvelteKit"
+      "url": string
+    }
+    "ThumbnailGenerate": {
       "name": string
       "type": "sst.aws.Function"
     }
-    "MyWeb": {
-      "type": "sst.aws.SvelteKit"
-      "url": string
+    "UserPool": {
+      "id": string
+      "type": "sst.aws.CognitoUserPool"
     }
   }
 }

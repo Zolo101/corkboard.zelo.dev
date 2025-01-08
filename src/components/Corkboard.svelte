@@ -5,7 +5,7 @@
         Application,
         Assets, BaseImageResource, BitmapFont,
         BitmapText,
-        ColorMatrixFilter, Container, Graphics, Rectangle,
+        ColorMatrixFilter, Container, Graphics, loadTextures, Rectangle,
         Sprite, Texture,
         TilingSprite,
     } from "pixi.js"
@@ -23,9 +23,10 @@
         BoardStage, searchText, creatingPostFormData
     } from "../app";
     import type { Post } from "../app";
-    const getPostURL = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=177x100f`;
+    // const getPostURL = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=177x100f`;
+    const getPostURL = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}`;
 
-    const clamp = (num, min, max) => Math.max(Math.min(num, max), min)
+    const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min)
 
     onMount(async () => {
         const app = new Application({
@@ -36,10 +37,10 @@
 
         })
 
-        const corkDOM = document.getElementById("corkboard")
+        const corkDOM = document.querySelector<HTMLDivElement>("#corkboard")!;
         corkDOM.append(app.view);
 
-        const currentPost: Post | undefined = $posts.find(post => post.id === $id)
+        const currentPost: Post | undefined = $posts.find(post => post.postId === $id)
         const defaultHoverText = currentPost?.title || "Hover over a post to see its title!"
 
         const vcr = await Assets.load("/corkboard/vcr_osd_mono_regular_24_x2.fnt")
@@ -141,18 +142,24 @@
         let oldId: string;
 
         const createPostSprite = async (post: Post) => {
-            const postSprite = post.files[0].at(-1) === "f" ? await Assets.load(getPostURL(post.id, post.files[0])) : new Sprite(await Assets.load(getPostURL(post.id, post.files[0])))
+            // const postSprite = post.files[0].at(-1) === "f" ? await Assets.load(getPostURL(post.id, post.files[0])) : new Sprite(await Assets.load(getPostURL(post.id, post.files[0])))
+
+            // Posts are required to have at least one file
+            const firstFile = post.files[0]!;
+            const postSprite = new Sprite(await Assets.load(getPostURL(firstFile)));
             postMap.set(post, postSprite)
             // const postSprite = new Image(postTexture)
             // postSprite.x = clamp(Math.random() * 640, 100, 500)
             // postSprite.y = clamp(Math.random() * 480, 100, 400)
             // console.log(post)
+
             postSprite.x = post.x
             postSprite.y = post.y
             postSprite.eventMode = "dynamic";
             let area = postSprite.width * postSprite.height
             // let maxArea = 200 * 200
-            let maxArea = 100 * 100
+            // let maxArea = 100 * 100
+            let maxArea = 150 * 150
             if (area > maxArea) {
                 postSprite.scale.set(maxArea / area)
             }
@@ -163,11 +170,11 @@
             // if (post.id !== $id) {
             postSprite.on("pointerdown", (event) => {
                 oldId = $id;
-                $id = post.id;
+                $id = post.postId.substring(5); // Remove POST#
             })
 
             postSprite.on("pointerover", (event) => {
-                if (oldId === post.id) postSprite.filters = [contrast, pixelate, outline, dropshadow]
+                if (oldId === post.postId) postSprite.filters = [contrast, pixelate, outline, dropshadow]
                 contrast.contrast(0.5, true);
                 hovertext.text = post.title
 
@@ -175,7 +182,7 @@
             })
 
             postSprite.on("pointerout", (event) => {
-                if (oldId === post.id) postSprite.filters = [contrast, pixelate]
+                if (oldId === post.postId) postSprite.filters = [contrast, pixelate]
                 contrast.contrast(0.5, false);
                 hovertext.text = defaultHoverText
 
@@ -189,7 +196,7 @@
             postContainer.addChild(postSprite)
         }
 
-        console.log($posts)
+        // console.log($posts)
         posts.subscribe((ps) => {
             // Only create for new posts
             ps
@@ -256,7 +263,7 @@
                         previewImage.filters = outsideBoard ? [globalContrast, pixelate, badBoundingBox, boundingBoxDropShadow] : [globalContrast, pixelate, goodBoundingBox, boundingBoxDropShadow]
 
                         if (!outsideBoard) {
-                            console.log(bounds.left, bounds.top, bounds.left.toString(), bounds.top.toString())
+                            // console.log(bounds.left, bounds.top, bounds.left.toString(), bounds.top.toString())
                             // hovertext.position.set(previewImage.position.x, previewImage.position.y)
                             $creatingPostFormData.set("x", bounds.left.toString())
                             $creatingPostFormData.set("y", bounds.top.toString())

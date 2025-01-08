@@ -26,13 +26,19 @@
   },
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.723.0",
+    "@aws-sdk/client-dynamodb": "^3.721.0",
+    "@aws-sdk/client-s3": "^3.722.0",
+    "@aws-sdk/lib-storage": "^3.722.0",
+    "@aws-sdk/util-dynamodb": "^3.723.0",
     "@pixi/filter-drop-shadow": "^5.2.0",
     "@pixi/filter-outline": "^5.2.0",
     "@pixi/filter-pixelate": "^5.1.1",
     "@pixi/gif": "^2.1.0",
+    "@sapphire/snowflake": "^3.5.5",
     "pixi.js": "^7.2.3",
     "pocketbase": "^0.13.1",
-    "sst": "3.4.54",
+    "sst": "3.5.0",
     "svelte-kit-sst": "2.43.5"
   }
 }

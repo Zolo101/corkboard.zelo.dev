@@ -10,10 +10,10 @@
         id,
         searchText,
         BoardStage,
-        creatingPostFormData
+        creatingPostFormData, refresh
     } from "../app";
 
-    const createPost = (e) => {
+    const createPost = () => {
         $creatingPostFormData.set("creator", "4jfbbn1krnrsspo") // Anonymous
 
         const formData = $creatingPostFormData
@@ -35,6 +35,7 @@
                 $boardStage = BoardStage.Placed
                 $loading = false
                 $id = postId
+                await refresh();
             })
             .catch((err) => {
                 console.error(err)
@@ -64,7 +65,7 @@
 </script>
 
 <a href="https://corkboard.zelo.dev/">
-    <img src="/corkboard/logo_alpha.png" alt="corkboard logo" class="p-5 m-auto"/>
+    <img src="/corkboard/logo.png" alt="corkboard logo" class="p-5 m-auto"/>
 </a>
 <div class="grid lg:flex max-lg:flex-col gap-5 justify-center items-start m-auto">
     <div class="lg:sticky top-0">

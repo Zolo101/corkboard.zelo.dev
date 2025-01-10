@@ -6,13 +6,18 @@ export type Thread = {
     replies: Reply[]
 }
 
-export type Post = {
-    postId: string
-    replyId: string // same as id
+type Base = {
     // creator: string
-    files: string[]
-    title: string
+    postId: string
+    replyId: string
     content: string
+    files: string[]
+    created: Date
+    updated: Date
+}
+
+export type Post = Base & {
+    title: string
     x: number
     y: number
 }
@@ -30,15 +35,7 @@ export type PostOld = {
     y: number
 }
 
-export type Reply = {
-    postId: string
-    replyId: string
-    creator: string
-    file: string
-    content: string
-    // created: Date
-    // updated: Date
-}
+export type Reply = Base
 
 export enum BoardStage {
     None,
@@ -60,6 +57,9 @@ export const creatingPostImageBlob = writable<File>();
 export const creatingReply = writable(false);
 export const thread =  writable<Thread>();
 export const posts =  writable<Post[]>([]);
+
+export const refresh = async () => posts.set(await (await fetch(`/api/board`)).json());
+
 // export const replies =  writable<Reply[]>([]);
 //
 // export const getPost = (async (id: string): Promise<Post> => pb

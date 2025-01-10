@@ -51,6 +51,8 @@ export const postPost = async (db: DynamoDBClient, body: any, files: string[]) =
             files: files,
             x: body.get("x"),
             y: body.get("y"),
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
         })
     }))
         .then(() => postId)
@@ -60,7 +62,7 @@ export const postPost = async (db: DynamoDBClient, body: any, files: string[]) =
         });
 }
 
-export const postReply = async (db: DynamoDBClient, postId: string, body: any, fileKey: string | null) => {
+export const postReply = async (db: DynamoDBClient, postId: string, body: any, fileKey?: string) => {
     // console.log(body)
     // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html
     const replyId = TwitterSnowflake.generate().toString();
@@ -72,8 +74,10 @@ export const postReply = async (db: DynamoDBClient, postId: string, body: any, f
             postId: "POST#" + postId,
             replyId: "REPLY#" + replyId,
             content: body.get("content"),
-            // TODO: Should we change it to files and having it be [file] to be the same as posts? But without the multiple images OFC.
-            file: fileKey,
+            // Empty file array if fileKey is falsy (null)
+            files: fileKey ? [fileKey] : [],
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
         })
     }))
         .then(() => postId)

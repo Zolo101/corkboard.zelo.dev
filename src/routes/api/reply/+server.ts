@@ -10,17 +10,17 @@ export const POST: RequestHandler  = async ({ locals: { db, s3 }, request }) => 
         return new Response("No postId found", { status: 400 });
     }
 
-    let FileKey: string | null = null;
-    if (body.has("file")) {
+    let FileKey: string | undefined = undefined;
+    if (body.has("files")) {
         // Upload image first
-        const file = body.get("file") as File;
+        const file = body.get("files") as File;
 
         // Yeah, sometimes the file is empty
         if (file.size !== 0) {
             // string cheese
-            const [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[])
+            [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[])
 
-            if (FileKey === null) {
+            if (FileKey === undefined) {
                 return new Response("Failed to upload file", { status: 500 });
             }
         }

@@ -24,7 +24,7 @@
     } from "../app";
     import type { Post } from "../app";
     // const getPostURL = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=177x100f`;
-    const getPostURL = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}`;
+    const getPostURL = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/200/${id.substring(3)}`;
 
     const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min)
 

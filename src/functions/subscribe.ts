@@ -51,7 +51,7 @@ export const postHandler = async (event: any) => {
                 })
             }));
         } catch (error: any) {
-            if (error.statusCode === 410) {
+            if (error.$metadata.httpStatusCode === 410) {
                 // 410 -- Gone :(
                 await removeConnection(db, connection.connectionId);
             } else {

@@ -3,7 +3,7 @@
     import { fly } from 'svelte/transition';
     // import { load } from "./+page";
     // import { creatingReply, getReplies, id, loading, pb, post, posts, replies} from "../../app";
-    import { creatingReply, id, loading, posts, thread } from "../../app";
+    import { creatingReply, id, loading, posts, refresh, thread } from "../../app";
     import { onMount } from "svelte";
 
     export let data;
@@ -24,7 +24,7 @@
             // $replies = result.replies;
             window.history.pushState({}, "", `/${v || ""}`);
             $loading = false;
-            console.log("NEW ID", $id)
+            console.log("SELECTED ID", $id)
         })
 
         // Gives us updates on new posts & replies.
@@ -38,7 +38,7 @@
             console.log("WEBSOCKET", event.data);
             const { newPosts, newReplies }: {newPosts: string[], newReplies: string[]} = JSON.parse(event.data);
             if (newPosts) {
-                $posts = await (await fetch(`/api/board`)).json();
+                await refresh();
             }
 
             if (newReplies) {
@@ -49,7 +49,7 @@
                         $thread = await (await fetch(`/api/post?id=${$id}`)).json();
                     }
                 }
-                $posts = await (await fetch(`/api/board`)).json();
+                await refresh();
             }
         };
         updateWebSocket.onclose = () => {
@@ -65,7 +65,8 @@
         // };
     })
 
-    const createReply = (f) => {
+    // TODO: Figure out type for "f"
+    const createReply = (f: any) => {
         const formData = new FormData(f.target);
         formData.append("postId", $id)
         // formData.append("creator", "4jfbbn1krnrsspo")
@@ -100,7 +101,8 @@
     // const getRepliesURLFit = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}?thumb=320x240f`;
     // const getRepliesURLOG = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}`;
 
-    const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}?size=200`;
+    // const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}?size=200`;
+    const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/200/${id.substring(3)}`;
     const getPostURLOG = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}`;
 </script>
 
@@ -145,22 +147,25 @@
                     <span class="float-left max-sm:text-2xl">Anonymous</span>
                     <span class="float-right max-sm:text-2xl">{new Date(reply.created).toLocaleString()}</span>
                     <br>
-                    {#if reply.file}
-                        <a href={getPostURLOG(reply.file)} class="h-full block">
-                            <img src={getPostURL200(reply.file)} alt={reply.file} class="inline outline outline-1 m-2"/>
+                    {#if reply.files.length}
+                      {@const file = reply.files[0]}
+                        <a href={getPostURLOG(file)} class="h-full block">
+                            <img src={getPostURL200(file)} alt={file} class="inline outline outline-1 m-2"/>
                         </a>
                     {/if}
                     <p class="text-xl max-sm:text-3xl">{reply.content}</p>
                 </div>
             {/each}
-            <p class="cb-input text-3xl text-center p-2 bg-green-400 hover:bg-green-500" on:click={() => $creatingReply = !$creatingReply}>Reply</p>
-            {#if $creatingReply}
+<!--            <p class="cb-input text-3xl text-center p-2 dark:text-black bg-green-400 hover:bg-green-500" on:click={() => $creatingReply = !$creatingReply}>Reply</p>-->
+<!--            {#if $creatingReply}-->
                 <form transition:fly={{y: 100}} class="flex flex-col" method="post" enctype="multipart/form-data" on:submit|preventDefault={createReply}>
                     <textarea type="text" name="content" placeholder="Message" class="cb-border cb-mask text-3xl p-5 m-1"/>
-                    <input type="file" name="file" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" class="cb-border cb-mask bg-green-50 p-5 m-1"/>
-                    <input type="submit" value="Submit" class="cb-input bg-green-200 hover:bg-green-300 text-3xl p-2 m-1"/>
+                    <div class="flex">
+                        <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" class="cb-border cb-mask bg-green-50 p-5 m-1"/>
+                        <input type="submit" value="->" class="cb-input dark:text-black bg-green-200 hover:bg-green-300 text-3xl p-2 m-1"/>
+                    </div>
                 </form>
-            {/if}
+            <!--{/if}-->
             <br>
         </div>
     {/if}

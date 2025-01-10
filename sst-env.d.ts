@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
-import "sst"
-export {}
+
 declare module "sst" {
   export interface Resource {
     "CDN": {
@@ -35,13 +34,13 @@ declare module "sst" {
       "type": "sst.aws.SvelteKit"
       "url": string
     }
-    "ThumbnailGenerate": {
-      "name": string
-      "type": "sst.aws.Function"
-    }
     "UserPool": {
       "id": string
       "type": "sst.aws.CognitoUserPool"
     }
   }
 }
+/// <reference path="sst-env.d.ts" />
+
+import "sst"
+export {}

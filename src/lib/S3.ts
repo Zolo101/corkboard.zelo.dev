@@ -6,7 +6,7 @@ import { TwitterSnowflake } from "@sapphire/snowflake";
 const makeConfig = (file: File) => {
     return {
         Bucket: Resource.Media.name,
-        Key: `${TwitterSnowflake.generate().toString()}-${file.name}`,
+        Key: `og/${TwitterSnowflake.generate().toString()}-${file.name}`,
         Body: file,
         ContentType: file.type,
     }

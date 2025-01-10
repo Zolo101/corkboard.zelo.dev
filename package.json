@@ -15,6 +15,7 @@
     "@sveltejs/adapter-auto": "^2.0.0",
     "@sveltejs/adapter-netlify": "^2.0.6",
     "@sveltejs/kit": "^1.15.5",
+    "@types/node": "^22.10.5",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",
     "svelte": "^3.55.1",
@@ -38,7 +39,8 @@
     "@sapphire/snowflake": "^3.5.5",
     "pixi.js": "^7.2.3",
     "pocketbase": "^0.13.1",
-    "sst": "3.5.0",
+    "sharp": "^0.33.5",
+    "sst": "3.5.5",
     "svelte-kit-sst": "2.43.5"
   }
 }

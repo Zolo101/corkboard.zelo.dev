@@ -80,10 +80,11 @@ export default $config({
         postsWebsocket.route("$disconnect", {handler: "src/functions/websocket.disconnect", link: [connections]})
         posts.subscribe("PostSubscriber", {handler: "src/functions/subscribe.postHandler", link: [connections, postsWebsocket]})
 
+        // I think I'm going to just go with IP
         // Anonymous User Pool
-        new sst.aws.CognitoUserPool("UserPool", {
-
-        })
+        // new sst.aws.CognitoUserPool("UserPool", {
+        //
+        // })
 
         // Web Push Notifications
         new sst.aws.SnsTopic("Notifications", {

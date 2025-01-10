@@ -3,7 +3,6 @@ import { getBoard, getPost } from "../../lib/REST";
 
 export const load: PageServerLoad = async ({ locals: { db }, params }) => {
     const board = await getBoard(db);
-
     if (params.id) {
         return {
             board,

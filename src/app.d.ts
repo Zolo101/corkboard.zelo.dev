@@ -2,7 +2,7 @@
 // for information about these interfaces
 
 declare global {
-	namespace App {
+	declare namespace App {
         import type { DynamoDBClient } from "@aws-sdk/client-dynamodb";
         import type { S3Client } from "@aws-sdk/client-s3";
 

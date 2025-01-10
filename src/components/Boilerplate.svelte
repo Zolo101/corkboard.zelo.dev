@@ -1,11 +1,11 @@
 <script>
     import Corkboard from "./Corkboard.svelte";
+    // import Settings from "/corkboard/settings.png";
     import { fly } from 'svelte/transition';
     import {
         boardStage,
         creatingPostImageBlob,
         creatingPostTitleText,
-        pb,
         loading,
         id,
         searchText,
@@ -13,12 +13,12 @@
         creatingPostFormData, refresh
     } from "../app";
 
+    let settingsPage = $state(false);
     const createPost = () => {
         $creatingPostFormData.set("creator", "4jfbbn1krnrsspo") // Anonymous
 
         const formData = $creatingPostFormData
         console.log($creatingPostFormData.get("x"), $creatingPostFormData.get("y"))
-        // const call = pb.collection("corkboard_posts").create(formData)
         const call = fetch("/api/post", {
             method: "POST",
             body: formData
@@ -68,11 +68,10 @@
     <img src="/corkboard/logo.png" alt="corkboard logo" class="p-5 m-auto"/>
 </a>
 <div class="grid lg:flex max-lg:flex-col gap-5 justify-center items-start m-auto">
-    <div class="lg:sticky top-0">
+    <div class="flex flex-col gap-2 lg:sticky top-5">
         <Corkboard/>
-        <br>
-        <div class="flex gap-2">
-            <div class="flex justify-center items-center text-5xl cb-input bg-green-400 w-16 h-16 cursor-pointer hover:bg-green-500" on:click={operateCreatingPostStage}>+</div>
+        <div class="flex gap-3">
+            <button class="flex justify-center items-center text-5xl cb-input  w-16 h-16 cursor-pointer bg-green-400 hover:bg-green-500" on:click={operateCreatingPostStage}>+</button>
             <input
                     type="text"
                     name="search"
@@ -80,11 +79,13 @@
                     class="flex justify-center items-center text-3xl cb-mask cb-border grow p-4 h-16"
                     on:input={s => $searchText = s.target.value.trim()}
             />
+            <button class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-neutral-400 hover:bg-neutral-500" on:click={() => settingsPage = !settingsPage}><img src="/corkboard/settings_icon.png" alt="Settings" class="p-2"/></button>
+            <a href="https://discord.gg/YVuuF9KB5j" class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-indigo-400 hover:bg-indigo-500"><img src="/corkboard/discord_icon.png" alt="Discord Link" class="p-2"/></a>
         </div>
         {#if $boardStage === BoardStage.Creating}
             <form
                     transition:fly={{y: 100}}
-                    class="flex flex-col gap-1 pt-2"
+                    class="flex flex-col gap-2 pt-2"
                     method="post"
                     enctype="multipart/form-data"
                     on:submit|preventDefault={e => {
@@ -94,27 +95,30 @@
                         $boardStage = BoardStage.Placing
                     }}
             >
-                <input
-                        type="text"
-                        name="title"
-                        placeholder="Title"
-                        maxlength="128"
-                        class="cb-border cb-mask p-5 m-1 text-4xl"
-                        on:input={s => $creatingPostTitleText = s.target.value.trim()}
-                        required
-                />
-                <textarea type="text" name="content" placeholder="Message" maxlength="4096" class="cb-border cb-mask p-5 m-1" required/>
-                <input
-                        type="file"
-                        name="files"
-                        accept="image/jpeg, image/png"
-                        placeholder="Images"
-                        class="cb-border cb-mask bg-green-50 p-5 m-1"
-                        on:change={s => $creatingPostImageBlob = s.target.files[0]}
-                        required={false}
-                />
-<!--                <p>The first image will be used in the corkboard.</p>-->
-                <input type="submit" value="Post!" class="cb-input bg-green-200 hover:bg-green-300 cursor-pointer p-5 mx-24 text-4xl"/>
+                <div class="flex flex-col cb-border cb-mask px-4 py-4 gap-2 bg-white">
+                    <input
+                            type="text"
+                            name="title"
+                            placeholder="Title"
+                            maxlength="128"
+                            class="text-4xl"
+                            on:input={s => $creatingPostTitleText = s.target.value.trim()}
+                            required
+                    />
+                    <textarea name="content" placeholder="Message" maxlength="4096" required></textarea>
+                    <div class="flex justify-center">
+                        <input
+                                type="file"
+                                name="files"
+                                accept="image/jpeg, image/png"
+                                placeholder="Images"
+                                on:change={s => $creatingPostImageBlob = s.target.files[0]}
+                                required={false}
+                        />
+                        <input type="submit" value="Post!" class="w-full bg-green-100 hover:bg-green-300 cursor-pointer rounded transition-colors"/>
+                    </div>
+    <!--                <p>The first image will be used in the corkboard.</p>-->
+                </div>
             </form>
         {/if}
         {#if $boardStage === BoardStage.Placing}
@@ -128,6 +132,9 @@
         {/if}
         <!--            <img src="/corkboard/board.png"/>-->
         <!--            <img src="/corkboard/dots.png"/>-->
+        {#if settingsPage}
+            <img src="/corkboard/settings.png"/>
+        {/if}
     </div>
     <div>
         <slot/>

@@ -34,10 +34,6 @@ declare module "sst" {
       "type": "sst.aws.SvelteKit"
       "url": string
     }
-    "UserPool": {
-      "id": string
-      "type": "sst.aws.CognitoUserPool"
-    }
   }
 }
 /// <reference path="sst-env.d.ts" />

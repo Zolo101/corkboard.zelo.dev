@@ -3,16 +3,13 @@
     import {
         AnimatedSprite,
         Application,
-        Assets, BaseImageResource, BitmapFont,
+        Assets, BitmapFont,
         BitmapText,
         ColorMatrixFilter, Container, Graphics, loadTextures, Rectangle,
         Sprite, Texture,
         TilingSprite,
     } from "pixi.js"
     import {onMount} from "svelte";
-    import { PixelateFilter } from "@pixi/filter-pixelate";
-    import { OutlineFilter } from "@pixi/filter-outline";
-    import { DropShadowFilter } from "@pixi/filter-drop-shadow";
     import {
         boardStage,
         creatingPostImageBlob,
@@ -23,22 +20,23 @@
         BoardStage, searchText, creatingPostFormData
     } from "../app";
     import type { Post } from "../app";
+    import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     // const getPostURL = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=177x100f`;
     const getPostURL = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/200/${id.substring(3)}`;
 
     const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min)
 
     onMount(async () => {
-        const app = new Application({
+        const app = new Application()
+        await app.init({
             width: 640,
             height: 480,
             backgroundAlpha: 0,
             antialias: false,
-
-        })
+        });
 
         const corkDOM = document.querySelector<HTMLDivElement>("#corkboard")!;
-        corkDOM.append(app.view);
+        corkDOM.append(app.canvas);
 
         const currentPost: Post | undefined = $posts.find(post => post.postId === $id)
         const defaultHoverText = currentPost?.title || "Hover over a post to see its title!"
@@ -67,10 +65,11 @@
         const dots = new TilingSprite(dotsTexture, 610 * 2, 470 * 2)
         // const hoverfont = BitmapFont.from("vcr_osd_mono_regular_24_x2")
         const hovertext = new BitmapText(defaultHoverText, {
-            fontName: "VCR OSD Mono",
+            fontFamily: "VCR OSD Mono",
             fontSize: 12,
             letterSpacing: -2,
-            maxWidth: 560
+            wordWrap: true,
+            wordWrapWidth: 560
         })
         hovertext.position.set(40, 20)
         dots.position.set(20, 5)
@@ -89,6 +88,7 @@
         globalContrast.contrast(0.5, false);
 
         const outline = new OutlineFilter(2, 0xfdb896);
+        const hovertextoutline = new OutlineFilter(2, 0x000000);
         const goodBoundingBox = new OutlineFilter(4, 0x00ff00, 1);
         const badBoundingBox = new OutlineFilter(4, 0xff4000, 1);
         const currentPostOutline = new OutlineFilter(16, 0xffffff, 0.5, 0.25);
@@ -117,13 +117,13 @@
             offset: {x: 1, y: 1},
             color: 0x000000,
             // alpha: 1,
-            blur: 2,
+            // blur: 2,
             quality: 1,
             // rotation: Math.PI / 6,
             // resolution: 1,
         })
 
-        hovertext.filters = [hovertextdropshadow]
+        hovertext.filters = [hovertextoutline, hovertextdropshadow]
         loadingGIF.filters = [pixelate]
         previewImage.filters = [globalContrast, pixelate]
 
@@ -139,6 +139,7 @@
         })
 
         const postMap = new Map<Post, Sprite>()
+        let selectedPostSprite: Sprite;
         let oldId: string;
 
         const createPostSprite = async (post: Post) => {
@@ -169,6 +170,11 @@
 
             // if (post.id !== $id) {
             postSprite.on("pointerdown", (event) => {
+                if (selectedPostSprite) {
+                    selectedPostSprite.filters = [contrast, pixelate]
+                }
+                selectedPostSprite = postSprite;
+                postSprite.filters = [contrast, pixelate, outline, dropshadow, currentPostOutline]
                 oldId = $id;
                 $id = post.postId.substring(5); // Remove POST#
             })
@@ -217,8 +223,8 @@
         app.stage.addChild(previewImage)
 
         app.ticker.add((delta) => {
-            dots.tilePosition.x -= travelSpeed * delta;
-            dots.tilePosition.y -= travelSpeed * delta;
+            dots.tilePosition.x -= travelSpeed * delta.deltaTime;
+            dots.tilePosition.y -= travelSpeed * delta.deltaTime;
         })
 
         boardStage.subscribe((bs) => {
@@ -303,7 +309,7 @@
 
         creatingPostImageBlob.subscribe(async (file) => {
             if (file) {
-                const texture = await Texture.fromURL(URL.createObjectURL(file))
+                const texture = Texture.from(URL.createObjectURL(file))
                 previewImage.texture = texture;
 
                 // 177x100f

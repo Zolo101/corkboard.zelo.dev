@@ -1,12 +1,13 @@
 <script lang="ts">
+    import { enhance } from '$app/forms';
     import Boilerplate from "../../components/Boilerplate.svelte";
     import { fly } from 'svelte/transition';
-    // import { load } from "./+page";
-    // import { creatingReply, getReplies, id, loading, pb, post, posts, replies} from "../../app";
     import { creatingReply, id, loading, posts, refresh, thread } from "../../app";
     import { onMount } from "svelte";
+    import { createdDateFormatter } from "$lib/util";
 
     export let data;
+    let replyForm: HTMLFormElement;
 
     onMount(() => {
         console.log(data)
@@ -65,6 +66,12 @@
         // };
     })
 
+    const enterSubmit = (e: KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            replyForm.requestSubmit();
+        }
+    }
+
     // TODO: Figure out type for "f"
     const createReply = (f: any) => {
         const formData = new FormData(f.target);
@@ -72,7 +79,6 @@
         // formData.append("creator", "4jfbbn1krnrsspo")
         console.log([...formData.entries()])
 
-        // const call = pb.collection("corkboard_replies").create(formData)
         const call = fetch("/api/reply", {
             method: "POST",
             body: formData
@@ -81,14 +87,10 @@
         $loading = true;
         call
             .then(async (result) => {
+                replyForm.reset();
                 $thread = await result.json();
-                // console.log("result", result)
-            //     getReplies(result.post).then((resultReplies) => {
-            //     $replies = resultReplies as Reply[];
-                // console.log("replies", $replies)
                 $creatingReply = false
                 $loading = false
-            //     })
             })
             .catch((err) => {
                 console.error(err)
@@ -96,12 +98,6 @@
             })
     }
 
-    // const getPostURL200 = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=0x200`;
-    // const getPostURLOG = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}`;
-    // const getRepliesURLFit = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}?thumb=320x240f`;
-    // const getRepliesURLOG = (id, name) => `https://cdn.zelo.dev/api/files/qlp02oagyzq6sdx/${id}/${name}`;
-
-    // const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}?size=200`;
     const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/200/${id.substring(3)}`;
     const getPostURLOG = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/${id}`;
 </script>
@@ -112,7 +108,7 @@
         {@const content = sliced ? $thread.post.content.slice(0, 200) + "(...)" : $thread.post.content}
         <title>corkboard - {$thread.post.title}</title>
         <meta name="description" content={content}>
-        <meta property="og:image" content="https://embed.zelo.dev/corkboard-embedgen-sharp?id={$thread.post.postId}">
+<!--        <meta property="og:image" content="https://embed.zelo.dev/corkboard-embedgen-sharp?id={$thread.post.postId}">-->
         <meta name="twitter:card" content="summary_large_image">
     {:else}
         <title>corkboard</title>
@@ -120,19 +116,32 @@
     {/if}
 </svelte:head>
 
+{#snippet r(reply)}
+  <div>
+    <span class="float-left text-sm max-sm:text-2xl">Anonymous</span>
+    <span class="float-right text-sm max-sm:text-2xl">{createdDateFormatter(reply.created)}</span>
+    <br>
+    {#if reply.files.length}
+      {@const file = reply.files[0]}
+      <a href={getPostURLOG(file)} class="h-full block">
+        <img src={getPostURL200(file)} alt={file} class="inline outline outline-1 m-2"/>
+      </a>
+    {/if}
+    <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
+  </div>
+{/snippet}
+
 <Boilerplate>
     {#if $thread}
         <!--{console.log("e", $post)}-->
-        <div class="lg:flex flex-col gap-4 lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
+        <div class="cb-mask px-4 gap-4 bg-[#f6dbd9] dark:bg-[#4a4241] lg:flex flex-col gap-1 lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
             <!--{#each data.post as reply}-->
     <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
-             <div class="cb-mask p-5 bg-[#f6dbd9] dark:bg-[#4a4241]">
+             <div>
                  <span class="float-left max-sm:text-2xl">Anonymous</span>
-                 <span class="float-right max-sm:text-2xl">{new Date($thread.post.created).toLocaleString()}</span>
+                 <span class="float-right max-sm:text-2xl">{createdDateFormatter($thread.post.created)}</span>
                  <br>
                  <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
-                 <!--                            <span>{post.created}</span>-->
-    <!--                 <p>{post.files}</p>-->
                  <div class="inline">
                      {#each $thread.post.files as file}
                          <a href={getPostURLOG(file)} class="h-full block">
@@ -140,32 +149,19 @@
                          </a>
                      {/each}
                  </div>
-                 <span class="max-h-2 mt-5 text-xl">{$thread.post.content}</span>
+                 <span class="px-2.5 text-xl">{$thread.post.content}</span>
             </div>
             {#each $thread.replies as reply}
-                <div class="cb-mask p-5 bg-[#f6dbd9] dark:bg-[#4a4241]">
-                    <span class="float-left max-sm:text-2xl">Anonymous</span>
-                    <span class="float-right max-sm:text-2xl">{new Date(reply.created).toLocaleString()}</span>
-                    <br>
-                    {#if reply.files.length}
-                      {@const file = reply.files[0]}
-                        <a href={getPostURLOG(file)} class="h-full block">
-                            <img src={getPostURL200(file)} alt={file} class="inline outline outline-1 m-2"/>
-                        </a>
-                    {/if}
-                    <p class="text-xl max-sm:text-3xl">{reply.content}</p>
-                </div>
+                {@render r(reply)}
             {/each}
-<!--            <p class="cb-input text-3xl text-center p-2 dark:text-black bg-green-400 hover:bg-green-500" on:click={() => $creatingReply = !$creatingReply}>Reply</p>-->
-<!--            {#if $creatingReply}-->
-                <form transition:fly={{y: 100}} class="flex flex-col" method="post" enctype="multipart/form-data" on:submit|preventDefault={createReply}>
-                    <textarea type="text" name="content" placeholder="Message" class="cb-border cb-mask text-3xl p-5 m-1"/>
-                    <div class="flex">
-                        <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" class="cb-border cb-mask bg-green-50 p-5 m-1"/>
-                        <input type="submit" value="->" class="cb-input dark:text-black bg-green-200 hover:bg-green-300 text-3xl p-2 m-1"/>
+                <form bind:this={replyForm} transition:fly={{y: 100}} method="post" enctype="multipart/form-data" on:submit|preventDefault={createReply}>
+                    <div class="flex flex-col cb-border cb-mask bg-white p-0.5 mt-2">
+                        <textarea name="content" placeholder="↵ to Send, Shift + ↵ for new line" class="text-xl p-1 m-1" on:keydown={enterSubmit}></textarea>
+                        <div class="flex justify-center p-1">
+                            <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" multiple class="bg-green-50"/>
+                        </div>
                     </div>
                 </form>
-            <!--{/if}-->
             <br>
         </div>
     {/if}

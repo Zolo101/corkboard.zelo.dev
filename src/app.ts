@@ -1,5 +1,4 @@
 import { writable } from "svelte/store";
-import PocketBase from "pocketbase";
 
 export type Thread = {
     post: Post,
@@ -7,13 +6,13 @@ export type Thread = {
 }
 
 type Base = {
-    // creator: string
+    creator: string // user id based on ip
     postId: string
     replyId: string
     content: string
     files: string[]
-    created: Date
-    updated: Date
+    created: string // Date string
+    updated: string // Date string
 }
 
 export type Post = Base & {
@@ -46,7 +45,6 @@ export enum BoardStage {
     SearchingNoResults,
 }
 
-export const pb = new PocketBase("https://cdn.zelo.dev")
 export const id = writable("");
 export const loading = writable(false);
 export const searchText = writable("");
@@ -59,17 +57,3 @@ export const thread =  writable<Thread>();
 export const posts =  writable<Post[]>([]);
 
 export const refresh = async () => posts.set(await (await fetch(`/api/board`)).json());
-
-// export const replies =  writable<Reply[]>([]);
-//
-// export const getPost = (async (id: string): Promise<Post> => pb
-//     .collection("corkboard_posts")
-//     .getOne(id))
-//
-// export const getReplies = (async (id: string): Promise<Reply[]> =>  pb
-//     .collection("corkboard_replies")
-//     .getFullList(-1, {filter: `post = "${id}"`}))
-//
-// export const getPosts = (async (): Promise<Post[]> => pb
-//     .collection("corkboard_homepage")
-//     .getFullList(-1, {sort: "-created"}))

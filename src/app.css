@@ -5,7 +5,7 @@
 @font-face {
     font-family: 'Lilian';
     font-display: swap;
-    src: url('/fonts/Lilian.ttf') format('truetype');
+    src: url('$lib/assets/fonts/Lilian.ttf') format('truetype');
 }
 
 html {
@@ -15,7 +15,10 @@ html {
 
 html, body {
     @apply dark:bg-black h-full max-sm:w-full;
-    background: url("/corkboard/background.png");
+
+     /*By giving a hex fallback, we dont flash-bang the user for a second */
+    background: #cc9a73 url("$lib/assets/background_2.png");
+    /*background: #cc9a73 url("$lib/assets/background_alpha_less.png");*/
 }
 
 @layer base {
@@ -31,19 +34,21 @@ html, body {
 }
 
 .cb-mask {
-    /*border-image-source: url("/corkboard/post.png");*/
-    /*border-image-slice: 25;*/
-    /*border-image-repeat: round;*/
-    /*border-image-width: 15px;*/
-    /*border-image-outset: 8px;*/
+    /*background-image: url("$lib/assets/background_alpha_2.png");*/
 
-    /*mask-border: url("/corkboard/post_mask.png");*/
+    border-image-source: url("$lib/assets/post.png");
+    border-image-slice: 25;
+    border-image-repeat: stretch;
+    border-image-width: 15px;
+    border-image-outset: 8px;
+
+    /*mask-border: url("$lib/assets/post_mask.png");*/
     /*mask-border-slice: 144;*/
     /*mask-border-width: 500px;*/
 }
 
 .cb-border {
-    border-image-source: url("/corkboard/post3thin.png");
+    border-image-source: url("$lib/assets/post3thin.png");
     border-image-slice: 5;
     border-image-repeat: round;
     border-image-width: 8px;
@@ -51,15 +56,15 @@ html, body {
 }
 
 .cb-input {
-    /*mask-border: url("/corkboard/post_mask.png");*/
+    /*mask-border: url("$lib/assets/post_mask.png");*/
     /*mask-border-slice: 144;*/
     /*mask-border-width: 500px;*/
 
-    /*mask-border: url("/corkboard/post3thin_mask.png");*/
+    /*mask-border: url("$lib/assets/post3thin_mask.png");*/
     /*mask-border-slice: 144;*/
     /*mask-border-width: 500px;*/
 
-    border-image-source: url("/corkboard/post3thin.png");
+    border-image-source: url("$lib/assets/post3thin.png");
     border-image-slice: 5;
     border-image-repeat: round;
     border-image-width: 8px;

@@ -5,15 +5,15 @@
     import { creatingReply, id, loading, posts, refresh, thread } from "../../app";
     import { onMount } from "svelte";
     import { createdDateFormatter } from "$lib/util";
+    import { pushState } from "$app/navigation";
 
     export let data;
     let replyForm: HTMLFormElement;
 
-    onMount(() => {
-        console.log(data)
-        $id = data.id;
+    $id = data.id;
 
-        $posts = data.board;
+    $posts = data.board;
+    onMount(() => {
 
         id.subscribe(async (v) => {
             if (v === undefined) return;
@@ -23,7 +23,7 @@
             $thread = result;
             // $posts = result.posts;
             // $replies = result.replies;
-            window.history.pushState({}, "", `/${v || ""}`);
+            pushState(`/${v || ""}`);
             $loading = false;
             console.log("SELECTED ID", $id)
         })
@@ -72,9 +72,10 @@
         }
     }
 
-    // TODO: Figure out type for "f"
-    const createReply = (f: any) => {
-        const formData = new FormData(f.target);
+    // TODO: Not sure if it's SubmitEvent
+    const createReply = (f: SubmitEvent) => {
+        f.preventDefault();
+        const formData = new FormData(f.target as HTMLFormElement);
         formData.append("postId", $id)
         // formData.append("creator", "4jfbbn1krnrsspo")
         console.log([...formData.entries()])
@@ -116,25 +117,38 @@
     {/if}
 </svelte:head>
 
-{#snippet r(reply)}
+{#snippet r(reply, index)}
+  <!--{@const sameAuthorAbove = $thread.replies[index - 1]}-->
+  {@const sameAuthorAbove = true}
+  <!-- TODO: This has a problem of if replies are in 1 minute intervals it'll never show the time-->
+  {@const similarTimeAsAbove = true}
   <div>
-    <span class="float-left text-sm max-sm:text-2xl">Anonymous</span>
-    <span class="float-right text-sm max-sm:text-2xl">{createdDateFormatter(reply.created)}</span>
-    <br>
+    {#if !sameAuthorAbove}
+      <span class="float-left text-sm max-sm:text-xs">Anonymous</span>
+    {/if}
+    {#if similarTimeAsAbove}
+      <span class="float-right text-xs opacity-25 max-sm:text-xs">{createdDateFormatter(reply.created)}</span>
+    {:else}
+      <span class="float-right text-sm max-sm:text-xs">{createdDateFormatter(reply.created)}</span>
+    {/if}
     {#if reply.files.length}
       {@const file = reply.files[0]}
       <a href={getPostURLOG(file)} class="h-full block">
         <img src={getPostURL200(file)} alt={file} class="inline outline outline-1 m-2"/>
       </a>
     {/if}
-    <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
+    {#if sameAuthorAbove}
+      <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
+    {:else}
+      <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
+    {/if}
   </div>
 {/snippet}
 
 <Boilerplate>
     {#if $thread}
         <!--{console.log("e", $post)}-->
-        <div class="cb-mask px-4 gap-4 bg-[#f6dbd9] dark:bg-[#4a4241] lg:flex flex-col gap-1 lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
+        <div class="cb-mask px-4 bg-[#f2e9e9] dark:bg-[#4a4241] lg:flex flex-col lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
             <!--{#each data.post as reply}-->
     <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
              <div>
@@ -151,17 +165,18 @@
                  </div>
                  <span class="px-2.5 text-xl">{$thread.post.content}</span>
             </div>
-            {#each $thread.replies as reply}
-                {@render r(reply)}
+            {#each $thread.replies as reply, i}
+                {@render r(reply, i)}
             {/each}
-                <form bind:this={replyForm} transition:fly={{y: 100}} method="post" enctype="multipart/form-data" on:submit|preventDefault={createReply}>
-                    <div class="flex flex-col cb-border cb-mask bg-white p-0.5 mt-2">
-                        <textarea name="content" placeholder="↵ to Send, Shift + ↵ for new line" class="text-xl p-1 m-1" on:keydown={enterSubmit}></textarea>
-                        <div class="flex justify-center p-1">
-                            <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" multiple class="bg-green-50"/>
-                        </div>
+            <hr>
+            <form bind:this={replyForm} method="post" enctype="multipart/form-data" onsubmit={createReply}>
+                <div class="flex flex-col bg-white dark:bg-neutral-600 p-0.5 mt-2">
+                    <textarea name="content" placeholder="↵ to Send, Shift + ↵ for new line" class="text-xl p-1 m-1 bg-white dark:bg-neutral-600 dark:text-neutral-100" onkeydown={enterSubmit}></textarea>
+                    <div class="flex justify-center p-1">
+                        <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" multiple class="bg-green-50 dark:bg-neutral-500 dark:text-neutral-100 rounded"/>
                     </div>
-                </form>
+                </div>
+            </form>
             <br>
         </div>
     {/if}

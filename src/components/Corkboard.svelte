@@ -3,9 +3,9 @@
     import {
         AnimatedSprite,
         Application,
-        Assets, BitmapFont,
+        Assets,
         BitmapText,
-        ColorMatrixFilter, Container, Graphics, loadTextures, Rectangle,
+        ColorMatrixFilter, Container,
         Sprite, Texture,
         TilingSprite,
     } from "pixi.js"
@@ -19,6 +19,11 @@
         posts,
         BoardStage, searchText, creatingPostFormData
     } from "../app";
+    import loadingURL from "$lib/assets/loading.gif";
+    import boardURL from "$lib/assets/board.png";
+    import borderURL from "$lib/assets/border.png";
+    import dotsURL from "$lib/assets/dots.png";
+    import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
     import type { Post } from "../app";
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     // const getPostURL = (id, name) => `https://cdn.zelo.dev/api/files/h3pktm4cd0utllp/${id}/${name}?thumb=177x100f`;
@@ -41,17 +46,17 @@
         const currentPost: Post | undefined = $posts.find(post => post.postId === $id)
         const defaultHoverText = currentPost?.title || "Hover over a post to see its title!"
 
-        const vcr = await Assets.load("/corkboard/vcr_osd_mono_regular_24_x2.fnt")
+        await Assets.load(fontURL)
 
         let travelSpeed = $boardStage ? 0.25 : 1
-        const loadingGIF: AnimatedSprite = await Assets.load("/corkboard/loading.gif")
+        const loadingGIF: AnimatedSprite = await Assets.load(loadingURL)
         loadingGIF.position.set(470, 330)
         // loadingGIF.scale.set(1)
         loading.subscribe(loading => loadingGIF.alpha = loading ? 0.5 : 0)
 
-        const boardTexture = await Assets.load("/corkboard/board.png")
-        const borderTexture = await Assets.load("/corkboard/border.png")
-        const dotsTexture = await Assets.load("/corkboard/dots.png")
+        const boardTexture = await Assets.load(boardURL)
+        const borderTexture = await Assets.load(borderURL)
+        const dotsTexture = await Assets.load(dotsURL)
         // const frontground = new Graphics()
         // frontground.beginFill(0x000000, 0.5)
         // frontground.drawRect(0, 0, 640, 480)
@@ -91,10 +96,10 @@
         const hovertextoutline = new OutlineFilter(2, 0x000000);
         const goodBoundingBox = new OutlineFilter(4, 0x00ff00, 1);
         const badBoundingBox = new OutlineFilter(4, 0xff4000, 1);
-        const currentPostOutline = new OutlineFilter(16, 0xffffff, 0.5, 0.25);
+        const currentPostOutline = new OutlineFilter(4, 0xffffff, 1, 0.25);
 
         const dropshadow = new DropShadowFilter({
-            // offset: 5,
+            offset: {x: 5, y: 5},
             color: 0x000000,
             // alpha: 1,
             blur: 5,
@@ -140,15 +145,27 @@
 
         const postMap = new Map<Post, Sprite>()
         let selectedPostSprite: Sprite;
-        let oldId: string;
+
+        const swapSpriteWithPost = async (sprite: Sprite, firstFile: string) => {
+            sprite.texture = await Assets.load(getPostURL(firstFile))
+            let area = sprite.width * sprite.height
+            // let maxArea = 200 * 200
+            // let maxArea = 100 * 100
+            let maxArea = 150 * 150
+            if (area > maxArea) {
+                sprite.scale.set(maxArea / area)
+            }
+        }
 
         const createPostSprite = async (post: Post) => {
             // const postSprite = post.files[0].at(-1) === "f" ? await Assets.load(getPostURL(post.id, post.files[0])) : new Sprite(await Assets.load(getPostURL(post.id, post.files[0])))
 
             // Posts are required to have at least one file
             const firstFile = post.files[0]!;
+            // const postSprite = new Sprite(await Assets.load(boardURL));
             const postSprite = new Sprite(await Assets.load(getPostURL(firstFile)));
             postMap.set(post, postSprite)
+            // await swapSpriteWithPost(postSprite, firstFile)
             // const postSprite = new Image(postTexture)
             // postSprite.x = clamp(Math.random() * 640, 100, 500)
             // postSprite.y = clamp(Math.random() * 480, 100, 400)
@@ -174,13 +191,12 @@
                     selectedPostSprite.filters = [contrast, pixelate]
                 }
                 selectedPostSprite = postSprite;
-                postSprite.filters = [contrast, pixelate, outline, dropshadow, currentPostOutline]
-                oldId = $id;
+                postSprite.filters = [contrast, pixelate, outline]
                 $id = post.postId.substring(5); // Remove POST#
             })
 
             postSprite.on("pointerover", (event) => {
-                if (oldId === post.postId) postSprite.filters = [contrast, pixelate, outline, dropshadow]
+                postSprite.filters = [contrast, pixelate, currentPostOutline]
                 contrast.contrast(0.5, true);
                 hovertext.text = post.title
 
@@ -188,14 +204,12 @@
             })
 
             postSprite.on("pointerout", (event) => {
-                if (oldId === post.postId) postSprite.filters = [contrast, pixelate]
+                if (selectedPostSprite !== postSprite) postSprite.filters = [contrast, pixelate]
                 contrast.contrast(0.5, false);
                 hovertext.text = defaultHoverText
 
                 corkDOM.style.cursor = "initial";
             })
-            // }
-
 
             postSprite.filters = [contrast, pixelate]
 
@@ -309,7 +323,12 @@
 
         creatingPostImageBlob.subscribe(async (file) => {
             if (file) {
-                const texture = Texture.from(URL.createObjectURL(file))
+                const texture = await Assets.load({
+                    src: URL.createObjectURL(file),
+                    format: "png",
+                    loadParser: "loadTextures"
+                })
+                console.log(texture)
                 previewImage.texture = texture;
 
                 // 177x100f

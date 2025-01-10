@@ -1,6 +1,9 @@
 <script>
     import Corkboard from "./Corkboard.svelte";
-    // import Settings from "/corkboard/settings.png";
+    import Logo from "$lib/assets/logo.png";
+    import SettingsIcon from "$lib/assets/settings_icon.png";
+    import DiscordIcon from "$lib/assets/discord_icon.png";
+    import CreateIcon from "$lib/assets/create_icon.png";
     import { fly } from 'svelte/transition';
     import {
         boardStage,
@@ -65,22 +68,22 @@
 </script>
 
 <a href="https://corkboard.zelo.dev/">
-    <img src="/corkboard/logo.png" alt="corkboard logo" class="p-5 m-auto"/>
+    <img src={Logo} alt="corkboard logo" class="p-5 m-auto"/>
 </a>
 <div class="grid lg:flex max-lg:flex-col gap-5 justify-center items-start m-auto">
     <div class="flex flex-col gap-2 lg:sticky top-5">
         <Corkboard/>
-        <div class="flex gap-3">
-            <button class="flex justify-center items-center text-5xl cb-input  w-16 h-16 cursor-pointer bg-green-400 hover:bg-green-500" on:click={operateCreatingPostStage}>+</button>
+        <div id="menu" class="flex gap-3">
+            <button class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-green-400 hover:bg-green-500" onclick={operateCreatingPostStage}><img src={CreateIcon} alt="Create" class="p-3"/></button>
             <input
                     type="text"
                     name="search"
                     placeholder="Search"
-                    class="flex justify-center items-center text-3xl cb-mask cb-border grow p-4 h-16"
-                    on:input={s => $searchText = s.target.value.trim()}
+                    class="flex justify-center items-center text-3xl cb-mask cb-border grow p-4 h-16 bg-white dark:bg-neutral-600"
+                    oninput={s => $searchText = s.target.value.trim()}
             />
-            <button class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-neutral-400 hover:bg-neutral-500" on:click={() => settingsPage = !settingsPage}><img src="/corkboard/settings_icon.png" alt="Settings" class="p-2"/></button>
-            <a href="https://discord.gg/YVuuF9KB5j" class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-indigo-400 hover:bg-indigo-500"><img src="/corkboard/discord_icon.png" alt="Discord Link" class="p-2"/></a>
+            <button class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-neutral-400 hover:bg-neutral-500" onclick={() => settingsPage = !settingsPage}><img src={SettingsIcon} alt="Settings" class="p-3"/></button>
+            <a href="https://discord.gg/YVuuF9KB5j" class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-indigo-400 hover:bg-indigo-500"><img src={DiscordIcon} alt="Discord Link" class="p-2"/></a>
         </div>
         {#if $boardStage === BoardStage.Creating}
             <form
@@ -88,34 +91,36 @@
                     class="flex flex-col gap-2 pt-2"
                     method="post"
                     enctype="multipart/form-data"
-                    on:submit|preventDefault={e => {
+                    onsubmit={e => {
+                        e.preventDefault()
                         $creatingPostFormData = new FormData(e.target)
                         //console.log(e)
                         //console.log($creatingPostFormData, "W");
                         $boardStage = BoardStage.Placing
                     }}
             >
-                <div class="flex flex-col cb-border cb-mask px-4 py-4 gap-2 bg-white">
+                <div class="flex flex-col cb-border cb-mask px-4 py-4 gap-2 bg-white dark:bg-neutral-600">
                     <input
                             type="text"
                             name="title"
                             placeholder="Title"
                             maxlength="128"
-                            class="text-4xl"
-                            on:input={s => $creatingPostTitleText = s.target.value.trim()}
+                            class="text-4xl bg-white dark:bg-neutral-600 dark:text-neutral-100"
+                            oninput={s => $creatingPostTitleText = s.target.value.trim()}
                             required
                     />
-                    <textarea name="content" placeholder="Message" maxlength="4096" required></textarea>
-                    <div class="flex justify-center">
+                    <textarea name="content" placeholder="Message" maxlength="4096" required class="bg-white dark:bg-neutral-600 dark:text-neutral-100"></textarea>
+                    <div class="flex gap-4 justify-center">
                         <input
                                 type="file"
                                 name="files"
                                 accept="image/jpeg, image/png"
                                 placeholder="Images"
-                                on:change={s => $creatingPostImageBlob = s.target.files[0]}
+                                class="bg-green-50 dark:bg-neutral-500 dark:text-neutral-100 rounded"
+                                onchange={s => $creatingPostImageBlob = s.target.files[0]}
                                 required={false}
                         />
-                        <input type="submit" value="Post!" class="w-full bg-green-100 hover:bg-green-300 cursor-pointer rounded transition-colors"/>
+                        <input type="submit" value="Post!" class="w-full bg-green-100 hover:bg-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:text-neutral-200 cursor-pointer rounded transition-colors"/>
                     </div>
     <!--                <p>The first image will be used in the corkboard.</p>-->
                 </div>
@@ -127,16 +132,27 @@
                     type="submit"
                     value="Place!"
                     class="cb-input bg-lime-300 hover:bg-lime-400 cursor-pointer text-4xl w-full p-5"
-                    on:click={createPost}
+                    onclick={createPost}
             />
         {/if}
         <!--            <img src="/corkboard/board.png"/>-->
         <!--            <img src="/corkboard/dots.png"/>-->
         {#if settingsPage}
-            <img src="/corkboard/settings.png"/>
+            <img src={SettingsIcon}/>
         {/if}
     </div>
     <div>
         <slot/>
     </div>
 </div>
+
+<style>
+    img {
+        image-rendering: pixelated;
+    }
+
+    #menu img {
+        opacity: 50%;
+        background-blend-mode: color;
+    }
+</style>

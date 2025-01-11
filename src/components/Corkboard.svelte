@@ -31,8 +31,8 @@
 
     const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min)
 
+    const app = new Application()
     onMount(async () => {
-        const app = new Application()
         await app.init({
             width: 640,
             height: 480,
@@ -45,8 +45,8 @@
 
         const currentPost: Post | undefined = $posts.find(post => post.postId === $id)
         const defaultHoverText = currentPost?.title || "Hover over a post to see its title!"
-
         await Assets.load(fontURL)
+
 
         let travelSpeed = $boardStage ? 0.25 : 1
         const loadingGIF: AnimatedSprite = await Assets.load(loadingURL)
@@ -67,16 +67,22 @@
         const postContainer = new Container()
         const board = new Sprite(boardTexture)
         const border = new Sprite(borderTexture)
-        const dots = new TilingSprite(dotsTexture, 610 * 2, 470 * 2)
-        // const hoverfont = BitmapFont.from("vcr_osd_mono_regular_24_x2")
-        const hovertext = new BitmapText(defaultHoverText, {
-            fontFamily: "VCR OSD Mono",
-            fontSize: 12,
-            letterSpacing: -2,
-            wordWrap: true,
-            wordWrapWidth: 560
+        const dots = new TilingSprite({
+            texture: dotsTexture,
+            width: 610 * 2,
+            height: 470 * 2
         })
-        hovertext.position.set(40, 20)
+        const hoverText = new BitmapText({
+            text: defaultHoverText,
+            style: {
+              fontFamily: "VCR OSD Mono",
+              fontSize: 12,
+              letterSpacing: -2,
+              wordWrap: true,
+              wordWrapWidth: 560
+            }
+        })
+        hoverText.position.set(40, 20)
         dots.position.set(20, 5)
         dots.scale.set(0.5)
         dots.alpha = 0.75
@@ -92,13 +98,13 @@
         const globalContrast = new ColorMatrixFilter();
         globalContrast.contrast(0.5, false);
 
-        const outline = new OutlineFilter(2, 0xfdb896);
-        const hovertextoutline = new OutlineFilter(2, 0x000000);
-        const goodBoundingBox = new OutlineFilter(4, 0x00ff00, 1);
-        const badBoundingBox = new OutlineFilter(4, 0xff4000, 1);
-        const currentPostOutline = new OutlineFilter(4, 0xffffff, 1, 0.25);
+        const outline = new OutlineFilter({thickness: 2, color: 0xfdb896});
+        const hoverTextOutline = new OutlineFilter({thickness: 2, color: 0x000000});
+        const goodBoundingBox = new OutlineFilter({thickness: 4, color: 0x00ff00, quality: 1});
+        const badBoundingBox = new OutlineFilter({thickness: 4, color: 0xff4000, quality: 1});
+        const currentPostOutline = new OutlineFilter({thickness: 4, color: 0xffffff, quality: 1, alpha: 0.25});
 
-        const dropshadow = new DropShadowFilter({
+        const dropShadow = new DropShadowFilter({
             offset: {x: 5, y: 5},
             color: 0x000000,
             // alpha: 1,
@@ -128,18 +134,18 @@
             // resolution: 1,
         })
 
-        hovertext.filters = [hovertextoutline, hovertextdropshadow]
+        hoverText.filters = [hoverTextOutline, hovertextdropshadow]
         loadingGIF.filters = [pixelate]
         previewImage.filters = [globalContrast, pixelate]
 
         board.interactive = true;
         board.addEventListener("pointermove", (event) => {
             if (event.global.y < 150) {
-                hovertext.position.set(30, 510 - hovertext.height)
-                hovertext.anchor.set(0, 1)
+                hoverText.position.set(30, 510 - hoverText.height)
+                hoverText.anchor.set(0, 1)
             } else {
-                hovertext.position.set(40, 20)
-                hovertext.anchor.set(0, 0)
+                hoverText.position.set(40, 20)
+                hoverText.anchor.set(0, 0)
             }
         })
 
@@ -198,7 +204,7 @@
             postSprite.on("pointerover", (event) => {
                 postSprite.filters = [contrast, pixelate, currentPostOutline]
                 contrast.contrast(0.5, true);
-                hovertext.text = post.title
+                hoverText.text = post.title
 
                 corkDOM.style.cursor = "pointer";
             })
@@ -206,7 +212,7 @@
             postSprite.on("pointerout", (event) => {
                 if (selectedPostSprite !== postSprite) postSprite.filters = [contrast, pixelate]
                 contrast.contrast(0.5, false);
-                hovertext.text = defaultHoverText
+                hoverText.text = defaultHoverText
 
                 corkDOM.style.cursor = "initial";
             })
@@ -228,11 +234,11 @@
         // Add filters to current post
         // id.subscribe((v) => {
         //     if (oldId) postMap.get(oldId).filters = []
-        //     postMap.get(v).filters = [globalContrast, pixelate, currentPostOutline, dropshadow]
+        //     postMap.get(v).filters = [globalContrast, pixelate, currentPostOutline, dropShadow]
         // })
 
         app.stage.addChild(border)
-        app.stage.addChild(hovertext)
+        app.stage.addChild(hoverText)
         app.stage.addChild(loadingGIF)
         app.stage.addChild(previewImage)
 
@@ -246,7 +252,7 @@
                 case BoardStage.None:
                     postContainer.visible = true
                     previewImage.visible = false
-                    hovertext.text = "Hover over a post to see its title!"
+                    hoverText.text = "Hover over a post to see its title!"
                     board.tint = "#ffffff"
                     dots.tint =  "#ffffff"
                     travelSpeed = 0.25
@@ -255,7 +261,7 @@
                 case BoardStage.Creating:
                     postContainer.visible = false
                     previewImage.visible = true
-                    hovertext.text = "Preview:"
+                    hoverText.text = "Preview:"
                     board.tint = "#e4ff9e"
                     dots.tint = "#e4ff9e"
                     travelSpeed = 1
@@ -284,17 +290,17 @@
 
                         if (!outsideBoard) {
                             // console.log(bounds.left, bounds.top, bounds.left.toString(), bounds.top.toString())
-                            // hovertext.position.set(previewImage.position.x, previewImage.position.y)
+                            // hoverText.position.set(previewImage.position.x, previewImage.position.y)
                             $creatingPostFormData.set("x", bounds.left.toString())
                             $creatingPostFormData.set("y", bounds.top.toString())
                         }
                         // let sprites = [...postMap.values()]
                         // sprites.map(s => {
-                            // s.filters = [globalContrast, pixelate, goodBoundingBox, dropshadow]
+                            // s.filters = [globalContrast, pixelate, goodBoundingBox, dropShadow]
                         // })
                     })
 
-                    hovertext.text = "Place the post!"
+                    hoverText.text = "Place the post!"
                     board.tint = "#ffc09e"
                     dots.tint = "#ffc09e"
                     travelSpeed = 2
@@ -318,7 +324,7 @@
         })
 
         creatingPostTitleText.subscribe((text) => {
-            hovertext.text = text || "Preview:"
+            hoverText.text = text || "Preview:"
         })
 
         creatingPostImageBlob.subscribe(async (file) => {
@@ -340,7 +346,7 @@
 
         searchText.subscribe((text) => {
             if (text.length === 0) {
-                hovertext.text = "Hover over a post to see its title!"
+                hoverText.text = "Hover over a post to see its title!"
                 return
             }
 
@@ -359,9 +365,9 @@
                 }
 
                 if (found === 1) {
-                    hovertext.text = lastFoundPost.title;
+                    hoverText.text = lastFoundPost.title;
                 } else {
-                    hovertext.text = found ? `Found ${found} results` : "No results found"
+                    hoverText.text = found ? `Found ${found} results` : "No results found"
                 }
                 // if (!one) $boardStage = BoardStage.SearchingNoResults
             // }

@@ -6,7 +6,7 @@ import {
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { Resource } from "sst";
-import { unmarshallArray } from "$lib/util";
+import { unmarshallArray } from "$lib/clientUtils";
 import { removeConnection } from "./websocket";
 
 // no broadcast method :(

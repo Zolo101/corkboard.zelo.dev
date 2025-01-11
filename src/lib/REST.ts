@@ -1,6 +1,5 @@
 import {
     type DynamoDBClient,
-    GetItemCommand,
     PutItemCommand,
     QueryCommand,
     ScanCommand
@@ -8,8 +7,9 @@ import {
 import { Resource } from "sst";
 import { TwitterSnowflake } from "@sapphire/snowflake";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import type { Thread } from "../app";
 
-export const getPost = async (db: DynamoDBClient, postId: string) => {
+export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread> => {
     // const { Item } = await db.send(new GetItemCommand({
     //     TableName: Resource.Posts.name,
     //     Key: { postId: { S: postId } }

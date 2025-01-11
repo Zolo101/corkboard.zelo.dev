@@ -45,7 +45,7 @@ export enum BoardStage {
     SearchingNoResults,
 }
 
-export const id = writable("");
+export const id = writable<string | undefined>("");
 export const loading = writable(false);
 export const searchText = writable("");
 export const boardStage = writable(BoardStage.None);
@@ -53,7 +53,7 @@ export const creatingPostFormData = writable<FormData>();
 export const creatingPostTitleText = writable("");
 export const creatingPostImageBlob = writable<File>();
 export const creatingReply = writable(false);
-export const thread =  writable<Thread>();
+export const thread =  writable<Thread | undefined>();
 export const posts =  writable<Post[]>([]);
 
 export const refresh = async () => posts.set(await (await fetch(`/api/board`)).json());

@@ -1,8 +1,3 @@
-import type { AttributeValue } from "@aws-sdk/client-dynamodb";
-import { unmarshall } from "@aws-sdk/util-dynamodb";
-
-export const unmarshallArray = (array: Record<string, AttributeValue>[]) => array.map((val) => unmarshall(val));
-
 export const createdDateFormatter = (createdString: string) => {
     // Today at 12:04 PM
     // Yesterday at 12:04 PM

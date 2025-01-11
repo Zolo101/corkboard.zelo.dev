@@ -1,13 +1,17 @@
 <script lang="ts">
-    import { enhance } from '$app/forms';
-    import Boilerplate from "../../components/Boilerplate.svelte";
     import { fly } from 'svelte/transition';
-    import { creatingReply, id, loading, posts, refresh, thread } from "../../app";
+    import { BoardStage, creatingReply, id, loading, posts, refresh, thread,boardStage, creatingPostImageBlob, creatingPostTitleText, searchText, creatingPostFormData } from "../../app";
     import { onMount } from "svelte";
-    import { createdDateFormatter } from "$lib/util";
+    import { createdDateFormatter } from "$lib/clientUtils";
     import { pushState } from "$app/navigation";
+    import Logo from "$lib/assets/logo.png";
+    import CreateIcon from "$lib/assets/create_icon.png";
+    import SettingsIcon from "$lib/assets/settings_icon.png";
+    import DiscordIcon from "$lib/assets/discord_icon.png";
+    import Corkboard from "../../components/Corkboard.svelte";
+    import type { PageData } from "./$types";
 
-    export let data;
+    let { data }: { data: PageData } = $props();
     let replyForm: HTMLFormElement;
 
     $id = data.id;
@@ -17,54 +21,56 @@
 
         id.subscribe(async (v) => {
             if (v === undefined) return;
+            if (v === data.id) {
+              $thread = data.post;
+            } else {
+              $thread = await (await fetch(`/api/post?id=${v}`)).json();
+            }
             $loading = true;
-            let getPost = await fetch(`/api/post?id=${v}`);
-            let result = await getPost.json();
-            $thread = result;
-            // $posts = result.posts;
-            // $replies = result.replies;
-            pushState(`/${v || ""}`);
+            try {
+                pushState(`/${v || ""}`, {});
+            } catch (e) {
+                console.warn("Failed to update URL", e);
+            }
             $loading = false;
             console.log("SELECTED ID", $id)
         })
 
-        // Gives us updates on new posts & replies.
-        const updateWebSocket = new WebSocket("wss://lnw2vlxzti.execute-api.eu-west-2.amazonaws.com/$default");
-        let dead = false;
-        updateWebSocket.onopen = () => {
-            console.log('Connected to WebSocket API');
-            dead = false;
-        };
-        updateWebSocket.onmessage = async (event) => {
-            console.log("WEBSOCKET", event.data);
-            const { newPosts, newReplies }: {newPosts: string[], newReplies: string[]} = JSON.parse(event.data);
-            if (newPosts) {
-                await refresh();
-            }
 
-            if (newReplies) {
-                for (const newReply of newReplies) {
-                    // TODO: We could optimize this by only messaging users with new replies in the thread currently on by adding a "currentThread" column to the connections table
-                    // Only update if its the current thread
-                    if (newReply.substring(5) === $id) {
-                        $thread = await (await fetch(`/api/post?id=${$id}`)).json();
-                    }
-                }
-                await refresh();
-            }
-        };
-        updateWebSocket.onclose = () => {
-            console.log('WebSocket connection closed');
-            dead = true;
-        };
-        updateWebSocket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-        // Run when the user clicks onto the tab
-        // window.onfocus = () => {
-        //     if (dead) updateWebSocket.
-        // };
     })
+
+    // Gives us updates on new posts & replies.
+    const updateWebSocket = new WebSocket("wss://lnw2vlxzti.execute-api.eu-west-2.amazonaws.com/$default");
+    let dead = false;
+    updateWebSocket.onopen = () => {
+        console.log('Connected to WebSocket API');
+        dead = false;
+    };
+    updateWebSocket.onmessage = async (event) => {
+        console.log("WEBSOCKET", event.data);
+        const { newPosts, newReplies }: {newPosts: string[], newReplies: string[]} = JSON.parse(event.data);
+        if (newPosts) {
+            await refresh();
+        }
+
+        if (newReplies) {
+            for (const newReply of newReplies) {
+                // TODO: We could optimize this by only messaging users with new replies in the thread currently on by adding a "currentThread" column to the connections table
+                // Only update if its the current thread
+                if (newReply.substring(5) === $id) {
+                    $thread = await (await fetch(`/api/post?id=${$id}`)).json();
+                }
+            }
+            await refresh();
+        }
+    };
+    updateWebSocket.onclose = () => {
+        console.log('WebSocket connection closed');
+        dead = true;
+    };
+    updateWebSocket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
 
     const enterSubmit = (e: KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -97,6 +103,43 @@
                 console.error(err)
                 alert(`Error... DM Zelo101 with a screenshot of the error:\n\n${err.message}`)
             })
+    }
+
+    let settingsPage = $state(false);
+    const createPost = () => {
+        $creatingPostFormData.set("creator", "4jfbbn1krnrsspo") // Anonymous
+
+        const formData = $creatingPostFormData
+        console.log($creatingPostFormData.get("x"), $creatingPostFormData.get("y"))
+        const call = fetch("/api/post", {
+            method: "POST",
+            body: formData
+        })
+
+        $loading = true;
+        call
+            .then(async (result) => {
+                const postId = await result.json();
+                $boardStage = BoardStage.Placed
+                $loading = false
+                $id = postId
+                await refresh();
+            })
+            .catch((err) => {
+                console.error(err)
+                alert(`Error... DM Zelo101 with a screenshot of the error:\n\n${err.message}`)
+            })
+
+    }
+
+    const operateCreatingPostStage = () => {
+        if ($boardStage === BoardStage.None) {
+            $boardStage = BoardStage.Creating
+        } else if ($boardStage === BoardStage.Creating) {
+            $boardStage = BoardStage.None
+        }
+
+        // ignore when PostStage.Placing
     }
 
     const getPostURL200 = (id: string) => `https://d3oeaaqvfzway3.cloudfront.net/200/${id.substring(3)}`;
@@ -145,39 +188,126 @@
   </div>
 {/snippet}
 
-<Boilerplate>
-    {#if $thread}
-        <!--{console.log("e", $post)}-->
-        <div class="cb-mask px-4 bg-[#f2e9e9] dark:bg-[#4a4241] lg:flex flex-col lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
-            <!--{#each data.post as reply}-->
-    <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
-             <div>
-                 <span class="float-left max-sm:text-2xl">Anonymous</span>
-                 <span class="float-right max-sm:text-2xl">{createdDateFormatter($thread.post.created)}</span>
-                 <br>
-                 <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
-                 <div class="inline">
-                     {#each $thread.post.files as file}
-                         <a href={getPostURLOG(file)} class="h-full block">
-                            <img src={getPostURL200(file)} alt={file} class="inline" style="image-rendering: pixelated"/>
-                         </a>
-                     {/each}
-                 </div>
-                 <span class="px-2.5 text-xl">{$thread.post.content}</span>
-            </div>
-            {#each $thread.replies as reply, i}
-                {@render r(reply, i)}
-            {/each}
-            <hr>
-            <form bind:this={replyForm} method="post" enctype="multipart/form-data" onsubmit={createReply}>
-                <div class="flex flex-col bg-white dark:bg-neutral-600 p-0.5 mt-2">
-                    <textarea name="content" placeholder="↵ to Send, Shift + ↵ for new line" class="text-xl p-1 m-1 bg-white dark:bg-neutral-600 dark:text-neutral-100" onkeydown={enterSubmit}></textarea>
-                    <div class="flex justify-center p-1">
-                        <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" multiple class="bg-green-50 dark:bg-neutral-500 dark:text-neutral-100 rounded"/>
-                    </div>
-                </div>
-            </form>
-            <br>
+<a href="https://corkboard.zelo.dev/">
+  <img id="logo" src={Logo} alt="corkboard logo" class="p-5 m-auto"/>
+</a>
+<div class="grid lg:flex max-lg:flex-col gap-5 justify-center items-start m-auto">
+  <div class="flex flex-col gap-2 lg:sticky top-5">
+    <Corkboard/>
+    <div id="menu" class="flex gap-3">
+      <button class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-green-400 hover:bg-green-500" onclick={operateCreatingPostStage}><img src={CreateIcon} alt="Create" width="64" height="64" class="p-3"/></button>
+      <input
+              type="text"
+              name="search"
+              placeholder="Search"
+              class="flex justify-center items-center text-3xl cb-mask cb-border grow p-4 h-16 bg-white dark:bg-neutral-600"
+              oninput={s => $searchText = s.target.value.trim()}
+      />
+      <button class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-neutral-400 hover:bg-neutral-500" onclick={() => settingsPage = !settingsPage}><img src={SettingsIcon} alt="Settings" width="64" height="64" class="p-3"/></button>
+      <a href="https://discord.gg/YVuuF9KB5j" class="flex justify-center items-center text-5xl cb-input w-16 h-16 cursor-pointer bg-indigo-400 hover:bg-indigo-500"><img src={DiscordIcon} alt="Discord Link" width="64" height="64" class="p-2"/></a>
+    </div>
+    {#if $boardStage === BoardStage.Creating}
+      <form
+              transition:fly={{y: 100}}
+              class="flex flex-col gap-2 pt-2"
+              method="post"
+              enctype="multipart/form-data"
+              onsubmit={e => {
+                        e.preventDefault()
+                        $creatingPostFormData = new FormData(e.target)
+                        //console.log(e)
+                        //console.log($creatingPostFormData, "W");
+                        $boardStage = BoardStage.Placing
+                    }}
+      >
+        <div class="flex flex-col cb-border cb-mask px-4 py-4 gap-2 bg-white dark:bg-neutral-600">
+          <input
+                  type="text"
+                  name="title"
+                  placeholder="Title"
+                  maxlength="128"
+                  class="text-4xl bg-white dark:bg-neutral-600 dark:text-neutral-100"
+                  oninput={s => $creatingPostTitleText = s.target.value.trim()}
+                  required
+          />
+          <textarea name="content" placeholder="Message" maxlength="4096" required class="bg-white dark:bg-neutral-600 dark:text-neutral-100"></textarea>
+          <div class="flex gap-4 justify-center">
+            <input
+                    type="file"
+                    name="files"
+                    accept="image/jpeg, image/png"
+                    placeholder="Images"
+                    class="bg-green-50 dark:bg-neutral-500 dark:text-neutral-100 rounded"
+                    onchange={s => $creatingPostImageBlob = s.target.files[0]}
+                    required={false}
+            />
+            <input type="submit" value="Post!" class="w-full bg-green-100 hover:bg-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:text-neutral-200 cursor-pointer rounded transition-colors"/>
+          </div>
+          <!--                <p>The first image will be used in the corkboard.</p>-->
         </div>
+      </form>
     {/if}
-</Boilerplate>
+    {#if $boardStage === BoardStage.Placing}
+      <input
+              transition:fly={{y: 100}}
+              type="submit"
+              value="Place!"
+              class="cb-input bg-lime-300 hover:bg-lime-400 cursor-pointer text-4xl w-full p-5"
+              onclick={createPost}
+      />
+    {/if}
+    <!--            <img src="/corkboard/board.png"/>-->
+    <!--            <img src="/corkboard/dots.png"/>-->
+    {#if settingsPage}
+      <img src={SettingsIcon}/>
+    {/if}
+  </div>
+  <div>
+    {#if $thread}
+      <!--{console.log("e", $post)}-->
+      <div class="cb-mask px-4 bg-[#f2e9e9] dark:bg-[#4a4241] lg:flex flex-col lg:min-w-[400px] lg:w-[30vw] dark:text-gray-300">
+        <!--{#each data.post as reply}-->
+        <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
+        <div>
+          <span class="float-left max-sm:text-2xl">Anonymous</span>
+          <span class="float-right max-sm:text-2xl">{createdDateFormatter($thread.post.created)}</span>
+          <br>
+          <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
+          <div class="inline">
+            {#each $thread.post.files as file}
+              <a href={getPostURLOG(file)} class="h-full block">
+                <img src={getPostURL200(file)} alt={file} class="inline" style="image-rendering: pixelated"/>
+              </a>
+            {/each}
+          </div>
+          <span class="px-2.5 text-xl">{$thread.post.content}</span>
+        </div>
+        {#each $thread.replies as reply, i}
+          {@render r(reply, i)}
+        {/each}
+        <hr>
+        <form bind:this={replyForm} method="post" enctype="multipart/form-data" onsubmit={createReply}>
+          <div class="flex flex-col bg-white dark:bg-neutral-600 p-0.5 mt-2">
+            <textarea name="content" placeholder="↵ to Send, Shift + ↵ for new line" class="text-xl p-1 m-1 bg-white dark:bg-neutral-600 dark:text-neutral-100" onkeydown={enterSubmit}></textarea>
+            <div class="flex justify-center p-1">
+              <input type="file" name="files" placeholder="Images" accept="image/jpeg, image/png, image/gif, image/webp" multiple class="bg-green-50 dark:bg-neutral-500 dark:text-neutral-100 rounded"/>
+            </div>
+          </div>
+        </form>
+        <br>
+      </div>
+    {/if}
+  </div>
+</div>
+
+<style>
+    #logo {
+        image-rendering: pixelated;
+    }
+
+    #menu img {
+        image-rendering: pixelated;
+        opacity: 50%;
+        background-blend-mode: color;
+    }
+</style>

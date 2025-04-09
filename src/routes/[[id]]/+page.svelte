@@ -51,7 +51,7 @@
 
     // Gives us updates on new posts & replies.
     const updateWebSocket = new WebSocket(
-        "wss://lnw2vlxzti.execute-api.eu-west-2.amazonaws.com/$default"
+        "wss://f59d4c8ub7.execute-api.eu-west-2.amazonaws.com/$default"
     );
     let dead = false;
     updateWebSocket.onopen = () => {

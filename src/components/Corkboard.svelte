@@ -198,7 +198,7 @@
             let maxArea = 100 * 100;
             // let maxArea = 150 * 150
             if (area > maxArea) {
-                postSprite.scale.set(maxArea / area);
+                postSprite.scale.set((maxArea / area) * scale);
             }
 
             const contrast = new ColorMatrixFilter();
@@ -290,7 +290,8 @@
                     previewImage.addEventListener("pointermove", (e) => {
                         const bounds = previewImage.getBounds();
 
-                        if (selected) previewImage.position.set(e.data.global.x, e.data.global.y);
+                        if (selected)
+                            previewImage.position.set(e.globalX / scale, e.globalY / scale);
                         const outsideBoard =
                             bounds.left < 20 ||
                             bounds.top < 18 ||

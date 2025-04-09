@@ -6,14 +6,14 @@ export default $config({
             name: "corkboard",
             removal: input?.stage === "production" ? "retain" : "remove",
             protect: ["production"].includes(input?.stage),
-            home: "aws",
+            home: "aws"
         };
     },
     async run() {
         // Media S3 Bucket
         const media = new sst.aws.Bucket("Media", {
-            access: "cloudfront",
-        })
+            access: "cloudfront"
+        });
         media.notify({
             notifications: [
                 {
@@ -25,8 +25,8 @@ export default $config({
                     events: ["s3:ObjectCreated:*"],
                     filterPrefix: "og/"
                 }
-            ],
-        })
+            ]
+        });
 
         // CloudFront CDN
         new sst.aws.Router("CDN", {
@@ -36,12 +36,13 @@ export default $config({
                     edge: {
                         viewerResponse: {
                             // For CORS during local development
-                            injection: "event.response.headers['access-control-allow-origin'] = { value: '*' };"
+                            injection:
+                                "event.response.headers['access-control-allow-origin'] = { value: '*' };"
                         }
                     }
                 }
             }
-        })
+        });
 
         // Lambda
         // new sst.aws.Function("ThumbnailGenerate", {
@@ -55,7 +56,7 @@ export default $config({
         const posts = new sst.aws.Dynamo("Posts", {
             fields: {
                 postId: "string",
-                replyId: "string",
+                replyId: "string"
                 // creatorId: "string",
                 // files: "string[]",
                 // content: "string",
@@ -64,7 +65,7 @@ export default $config({
             },
             primaryIndex: { hashKey: "postId", rangeKey: "replyId" },
             stream: "new-image"
-        })
+        });
 
         // Connection table for WebSocket
         const connections = new sst.aws.Dynamo("Connections", {
@@ -72,13 +73,22 @@ export default $config({
                 connectionId: "string"
             },
             primaryIndex: { hashKey: "connectionId" }
-        })
+        });
 
         // WebSocket for Realtime Post & Reply creation
-        const postsWebsocket = new sst.aws.ApiGatewayWebSocket("PostWebSocket")
-        postsWebsocket.route("$connect", {handler: "src/functions/websocket.connect", link: [connections]})
-        postsWebsocket.route("$disconnect", {handler: "src/functions/websocket.disconnect", link: [connections]})
-        posts.subscribe("PostSubscriber", {handler: "src/functions/subscribe.postHandler", link: [connections, postsWebsocket]})
+        const postsWebsocket = new sst.aws.ApiGatewayWebSocket("PostWebSocket");
+        postsWebsocket.route("$connect", {
+            handler: "src/functions/websocket.connect",
+            link: [connections]
+        });
+        postsWebsocket.route("$disconnect", {
+            handler: "src/functions/websocket.disconnect",
+            link: [connections]
+        });
+        posts.subscribe("PostSubscriber", {
+            handler: "src/functions/subscribe.postHandler",
+            link: [connections, postsWebsocket]
+        });
 
         // I think I'm going to just go with IP
         // Anonymous User Pool
@@ -87,13 +97,11 @@ export default $config({
         // })
 
         // Web Push Notifications
-        new sst.aws.SnsTopic("Notifications", {
-
-        })
+        new sst.aws.SnsTopic("Notifications", {});
 
         // Frontend
         new sst.aws.SvelteKit("Site", {
             link: [media, posts]
         });
-    },
+    }
 });

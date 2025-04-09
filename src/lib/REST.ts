@@ -16,15 +16,17 @@ export const getPost = async (db: DynamoDBClient, postId: string): Promise<Threa
     // }));
 
     // TODO: Get replies as well
-    const { Items } = await db.send(new QueryCommand({
-        TableName: Resource.Posts.name,
-        KeyConditionExpression: "postId = :postId",
-        ExpressionAttributeValues: {
-            ":postId": {S: "POST#" + postId}
-        }
-    }));
+    const { Items } = await db.send(
+        new QueryCommand({
+            TableName: Resource.Posts.name,
+            KeyConditionExpression: "postId = :postId",
+            ExpressionAttributeValues: {
+                ":postId": { S: "POST#" + postId }
+            }
+        })
+    );
 
-    const result = (Items ?? []).map(item => unmarshall(item));
+    const result = (Items ?? []).map((item) => unmarshall(item));
 
     // find the post
     // const post = take(result as (Post | Reply)[], (item) => item.postId === item.replyId);
@@ -34,63 +36,76 @@ export const getPost = async (db: DynamoDBClient, postId: string): Promise<Threa
         post: result.find((item) => item.postId === item.replyId),
         replies: result.filter((item) => item.postId !== item.replyId)
     };
-}
+};
 
 export const postPost = async (db: DynamoDBClient, body: any, files: string[]) => {
     // console.log(body)
     // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html
     const postId = TwitterSnowflake.generate().toString();
 
-    return db.send(new PutItemCommand({
-        TableName: Resource.Posts.name,
-        Item: marshall({
-            postId: "POST#" + postId,
-            replyId: "POST#" + postId,
-            title: body.get("title"),
-            content: body.get("content"),
-            files: files,
-            x: body.get("x"),
-            y: body.get("y"),
-            created: new Date().toISOString(),
-            updated: new Date().toISOString(),
-        })
-    }))
+    return db
+        .send(
+            new PutItemCommand({
+                TableName: Resource.Posts.name,
+                Item: marshall({
+                    postId: "POST#" + postId,
+                    replyId: "POST#" + postId,
+                    title: body.get("title"),
+                    content: body.get("content"),
+                    files: files,
+                    x: body.get("x"),
+                    y: body.get("y"),
+                    created: new Date().toISOString(),
+                    updated: new Date().toISOString()
+                })
+            })
+        )
         .then(() => postId)
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             return null;
         });
-}
+};
 
-export const postReply = async (db: DynamoDBClient, postId: string, body: any, fileKey?: string) => {
+export const postReply = async (
+    db: DynamoDBClient,
+    postId: string,
+    body: any,
+    fileKey?: string
+) => {
     // console.log(body)
     // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html
     const replyId = TwitterSnowflake.generate().toString();
 
     // Create a new reply
-    return db.send(new PutItemCommand({
-        TableName: Resource.Posts.name,
-        Item: marshall({
-            postId: "POST#" + postId,
-            replyId: "REPLY#" + replyId,
-            content: body.get("content"),
-            // Empty file array if fileKey is falsy (null)
-            files: fileKey ? [fileKey] : [],
-            created: new Date().toISOString(),
-            updated: new Date().toISOString(),
-        })
-    }))
+    return db
+        .send(
+            new PutItemCommand({
+                TableName: Resource.Posts.name,
+                Item: marshall({
+                    postId: "POST#" + postId,
+                    replyId: "REPLY#" + replyId,
+                    content: body.get("content"),
+                    // Empty file array if fileKey is falsy (null)
+                    files: fileKey ? [fileKey] : [],
+                    created: new Date().toISOString(),
+                    updated: new Date().toISOString()
+                })
+            })
+        )
         .then(() => postId)
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
             return null;
         });
-}
+};
 
 export const getBoard = async (db: DynamoDBClient) => {
-    const { Items } = await db.send(new ScanCommand({
-        TableName: Resource.Posts.name
-    }));
+    const { Items } = await db.send(
+        new ScanCommand({
+            TableName: Resource.Posts.name
+        })
+    );
 
     // does not work
     // const { Items } = await db.send(new QueryCommand({
@@ -104,6 +119,6 @@ export const getBoard = async (db: DynamoDBClient) => {
     // unmarshall gets rid of the ugly S, N, etc.
     // TODO: Is there a way to NOT filter this?? :sob:
     return Items!
-        .map(item => unmarshall(item))
-        .filter(item => item.replyId.startsWith("POST#"));
-}
+        .map((item) => unmarshall(item))
+        .filter((item) => item.replyId.startsWith("POST#"));
+};

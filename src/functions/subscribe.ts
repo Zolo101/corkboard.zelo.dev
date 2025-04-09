@@ -6,17 +6,19 @@ import {
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
 import { Resource } from "sst";
-import { unmarshallArray } from "$lib/clientUtils";
 import { removeConnection } from "./websocket";
+import { unmarshallArray } from "./serverUtils";
 
 // no broadcast method :(
 const getAllConnections = async (db: DynamoDBClient) => {
-    const { Items } = await db.send(new ScanCommand({
-        TableName: Resource.Connections.name
-    }));
+    const { Items } = await db.send(
+        new ScanCommand({
+            TableName: Resource.Connections.name
+        })
+    );
 
     return unmarshallArray(Items ?? []);
-}
+};
 
 export const postHandler = async (event: any) => {
     const client = new ApiGatewayManagementApiClient({
@@ -30,7 +32,7 @@ export const postHandler = async (event: any) => {
     for (const newThing of Records) {
         // Find partition id of new posts & replies
         if (newThing.eventName === "INSERT") {
-            const {replyId, postId} = unmarshall(newThing.dynamodb.Keys);
+            const { replyId, postId } = unmarshall(newThing.dynamodb.Keys);
             if (replyId === postId) {
                 newPosts.push(postId);
             } else {
@@ -42,14 +44,16 @@ export const postHandler = async (event: any) => {
     const connections = await getAllConnections(db);
     const postCalls = connections.map(async (connection) => {
         try {
-            console.log(connection)
-            await client.send(new PostToConnectionCommand({
-                ConnectionId: connection.connectionId,
-                Data: JSON.stringify({
-                    newPosts,
-                    newReplies
+            console.log(connection);
+            await client.send(
+                new PostToConnectionCommand({
+                    ConnectionId: connection.connectionId,
+                    Data: JSON.stringify({
+                        newPosts,
+                        newReplies
+                    })
                 })
-            }));
+            );
         } catch (error: any) {
             if (error.$metadata.httpStatusCode === 410) {
                 // 410 -- Gone :(
@@ -63,4 +67,4 @@ export const postHandler = async (event: any) => {
     // console.log("\n\nNew stuff", JSON.stringify(event, null, 2));
     // TODO: Error handling
     await Promise.all(postCalls);
-}
+};

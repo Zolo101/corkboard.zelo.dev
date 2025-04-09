@@ -8,4 +8,4 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.s3 = new S3Client();
 
     return resolve(event);
-}
+};

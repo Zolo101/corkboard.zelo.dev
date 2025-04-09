@@ -1,19 +1,19 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 
-declare global {
-	declare namespace App {
-        import type { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-        import type { S3Client } from "@aws-sdk/client-s3";
+import type { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import type { S3Client } from "@aws-sdk/client-s3";
 
+declare global {
+    declare namespace App {
         // interface Error {}
-		interface Locals {
-            db: DynamoDBClient
-            s3: S3Client
+        interface Locals {
+            db: DynamoDBClient;
+            s3: S3Client;
         }
-		// interface PageData {}
-		// interface Platform {}
-	}
+        // interface PageData {}
+        // interface Platform {}
+    }
 }
 
-export {};
+// export {};

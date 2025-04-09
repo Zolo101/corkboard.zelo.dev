@@ -8,11 +8,10 @@ export const load: PageServerLoad = async ({ locals: { db }, params }) => {
             board,
             post: await getPost(db, params.id),
             id: params.id
-        }
+        };
     } else {
         return {
             board
-        }
+        };
     }
-
-}
+};

@@ -3,26 +3,27 @@
 @tailwind utilities;
 
 @font-face {
-    font-family: 'Lilian';
+    font-family: "Lilian";
     font-display: swap;
-    src: url('$lib/assets/fonts/Lilian.ttf') format('truetype');
+    src: url("$lib/assets/fonts/Lilian.ttf") format("truetype");
 }
 
 html {
-    font-family: 'Lilian' !important;
+    font-family: "Lilian" !important;
 }
 
+html,
+body {
+    @apply h-full w-full dark:bg-black; /* max-sm:w-full*/
 
-html, body {
-    @apply dark:bg-black h-full max-sm:w-full;
-
-     /*By giving a hex fallback, we dont flash-bang the user for a second */
+    /*By giving a hex fallback, we dont flash-bang the user for a second */
     background: #cc9a73 url("$lib/assets/background_2.png");
     /*background: #cc9a73 url("$lib/assets/background_alpha_less.png");*/
 }
 
 @layer base {
-    ul, ol {
+    ul,
+    ol {
         list-style: revert;
         margin: revert;
         padding: revert;
@@ -70,11 +71,11 @@ html, body {
     border-image-width: 8px;
     border-image-outset: 3px;
 
-    @apply transition-colors cursor-pointer;
+    @apply cursor-pointer transition-colors;
 }
 
 ::-webkit-scrollbar {
-    @apply w-3 h-3;
+    @apply h-3 w-3;
 }
 
 ::-webkit-scrollbar-track {
@@ -82,5 +83,5 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-black bg-opacity-50 rounded;
+    @apply rounded bg-black bg-opacity-50;
 }

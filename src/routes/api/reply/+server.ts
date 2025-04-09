@@ -2,7 +2,7 @@ import { error, json, type RequestHandler, text } from "@sveltejs/kit";
 import { getPost, postReply } from "$lib/REST";
 import { uploadFiles } from "$lib/S3";
 
-export const POST: RequestHandler  = async ({ locals: { db, s3 }, request }) => {
+export const POST: RequestHandler = async ({ locals: { db, s3 }, request }) => {
     // TODO: Dirty!
     const body = await request.formData();
 
@@ -18,7 +18,7 @@ export const POST: RequestHandler  = async ({ locals: { db, s3 }, request }) => 
         // Yeah, sometimes the file is empty
         if (file.size !== 0) {
             // string cheese
-            [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[])
+            [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[]);
 
             if (FileKey === undefined) {
                 return new Response("Failed to upload file", { status: 500 });
@@ -36,4 +36,4 @@ export const POST: RequestHandler  = async ({ locals: { db, s3 }, request }) => 
     } else {
         return new Response("Failed to reply", { status: 500 });
     }
-}
+};

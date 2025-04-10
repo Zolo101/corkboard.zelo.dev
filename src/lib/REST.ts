@@ -7,7 +7,7 @@ import {
 import { Resource } from "sst";
 import { TwitterSnowflake } from "@sapphire/snowflake";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import type { Thread } from "../app";
+import type { Post, Thread } from "../app";
 
 export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread> => {
     // const { Item } = await db.send(new GetItemCommand({
@@ -120,5 +120,5 @@ export const getBoard = async (db: DynamoDBClient) => {
     // TODO: Is there a way to NOT filter this?? :sob:
     return Items!
         .map((item) => unmarshall(item))
-        .filter((item) => item.replyId.startsWith("POST#"));
+        .filter((item) => item.replyId.startsWith("POST#")) as Post[];
 };

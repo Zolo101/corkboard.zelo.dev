@@ -34,53 +34,16 @@ body {
         text-decoration: revert;
     }
 }
-
-.cb-mask {
-    /*background-image: url("$lib/assets/background_alpha_2.png");*/
-
-    /* border-image-source: url("$lib/assets/post.png");
-    border-image-slice: 25;
-    border-image-repeat: stretch;
-    border-image-width: 15px;
-    border-image-outset: 8px; */
-
-    /*mask-border: url("$lib/assets/post_mask.png");*/
-    /*mask-border-slice: 144;*/
-    /*mask-border-width: 500px;*/
-}
-
-.cb-border {
-    /* border-image-source: url("$lib/assets/post3thin.png");
-    border-image-slice: 5;
-    border-image-repeat: round;
-    border-image-width: 8px;
-    border-image-outset: 3px; */
-}
-
 .cb-input {
-    /*mask-border: url("$lib/assets/post_mask.png");*/
-    /*mask-border-slice: 144;*/
-    /*mask-border-width: 500px;*/
-
-    /*mask-border: url("$lib/assets/post3thin_mask.png");*/
-    /*mask-border-slice: 144;*/
-    /*mask-border-width: 500px;*/
-
-    /* border-image-source: url("$lib/assets/post3thin.png");
-    border-image-slice: 5;
-    border-image-repeat: round;
-    border-image-width: 8px;
-    border-image-outset: 3px; */
-
     @apply cursor-pointer transition-colors flex h-16 min-w-16 rounded shadow ring-2 items-center justify-center;
 }
 
 ::-webkit-scrollbar {
-    @apply h-3 w-3;
+    @apply h-2 w-2;
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-[#cb9a75];
+    @apply bg-[#535353];
 }
 
 ::-webkit-scrollbar-thumb {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { fly } from "svelte/transition";
+    import { fade, fly } from "svelte/transition";
     import {
         BoardStage,
         creatingReply,
@@ -13,6 +13,7 @@
         searchText,
         creatingPostFormData
     } from "../../app";
+    import type { Reply } from "../../app";
     import { onMount } from "svelte";
     import { createdDateFormatter } from "$lib/clientUtils";
     import { pushState } from "$app/navigation";
@@ -99,6 +100,17 @@
     const createReply = (f: SubmitEvent) => {
         f.preventDefault();
         const formData = new FormData(f.target as HTMLFormElement);
+
+        if ($id === undefined) {
+            alert("No post selected??");
+            return;
+        }
+
+        const message = formData.get("content") as string;
+        if (message.trim().length === 0) {
+            return;
+        }
+
         formData.append("postId", $id);
         // formData.append("creator", "4jfbbn1krnrsspo")
         console.log([...formData.entries()]);
@@ -174,7 +186,7 @@
     {/if}
 </svelte:head>
 
-{#snippet r(reply, index)}
+{#snippet r(reply: Reply, index: number)}
     <!--{@const sameAuthorAbove = $thread.replies[index - 1]}-->
     {@const sameAuthorAbove = true}
     <!-- TODO: This has a problem of if replies are in 1 minute intervals it'll never show the time-->
@@ -206,11 +218,37 @@
     </div>
 {/snippet}
 
-<a href="https://corkboard.zelo.dev/">
+{#snippet settingsOption(name: string, description?: string)}
+    <div>
+        <label for={name}>{name}</label>
+        <input
+            {name}
+            type="checkbox"
+            class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
+        />
+        {#if description}
+            <p class="mb-2 text-sm text-zinc-900">{description}</p>
+        {/if}
+    </div>
+{/snippet}
+
+{#snippet theme(name: string)}
+    <div class="ring-2 ring-black">
+        <img
+            src="/favicon.png"
+            style="filter: hue-rotate({Math.random() * 360}deg)"
+            width="64"
+            height="64"
+            alt={name}
+        />
+    </div>
+{/snippet}
+
+<a href="/">
     <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5 brightness-150 grayscale" />
 </a>
-<div class="mx-5 flex justify-center gap-5 max-lg:flex-col">
-    <div class="top-5 mb-5 flex grow flex-col items-center gap-2 lg:sticky">
+<main class="mx-5 flex justify-center gap-5 max-lg:flex-col">
+    <section class="top-5 mb-5 flex grow flex-col items-center gap-2 lg:sticky">
         <Corkboard />
         <div id="menu" class="flex w-1/2 justify-center gap-3">
             <button
@@ -306,13 +344,34 @@
         {/if}
         <!--            <img src="/corkboard/board.png"/>-->
         <!--            <img src="/corkboard/dots.png"/>-->
-        {#if settingsPage}
-            <img src={SettingsIcon} />
+        {#if !settingsPage}
+            <!-- TODO: Create a settings component? -->
+            <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
+                <div>
+                    <h1 class="text-4xl">General</h1>
+                    <h2 class="text-2xl">Themes</h2>
+                    <div class="flex gap-2">
+                        {#each ["Green", "Blue", "Red", "Purple", "Classic"] as item}
+                            {@render theme(item)}
+                        {/each}
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-4xl">Accessibility</h1>
+                    {@render settingsOption("Normal Font")}
+                    {@render settingsOption("Reduce Motion")}
+                    {@render settingsOption("High Contrast")}
+                    {@render settingsOption(
+                        "Screen-Reader accessible Corkboard",
+                        "This will turn the Corkboard into a list."
+                    )}
+                </div>
+            </section>
         {/if}
-    </div>
+    </section>
     {#if $thread}
         <!--{console.log("e", $post)}-->
-        <div class="cb-mask grow-[2] px-4 dark:text-gray-300">
+        <aside class="cb-mask mb-4 grow-[2] px-4 dark:text-gray-300">
             <!--{#each data.post as reply}-->
             <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
             <div>
@@ -349,6 +408,7 @@
                 <div class="mt-2 flex flex-col rounded bg-white p-0.5 dark:bg-neutral-500">
                     <textarea
                         name="content"
+                        maxlength="4096"
                         placeholder="↵ to Send, Shift + ↵ for new line"
                         class="m-1 bg-white p-1 text-xl dark:bg-neutral-600 dark:text-neutral-100"
                         onkeydown={enterSubmit}
@@ -359,15 +419,14 @@
                             name="files"
                             placeholder="Images"
                             accept="image/jpeg, image/png, image/gif, image/webp"
-                            multiple
                             class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
                         />
                     </div>
                 </div>
             </form>
-        </div>
+        </aside>
     {/if}
-</div>
+</main>
 
 <style>
     #logo {

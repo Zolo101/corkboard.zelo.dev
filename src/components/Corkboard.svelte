@@ -118,6 +118,9 @@
         const globalContrast = new ColorMatrixFilter();
         globalContrast.contrast(0.5, false);
 
+        const contrast = new ColorMatrixFilter();
+        contrast.contrast(0.5, false);
+
         const greyscale = new ColorMatrixFilter();
         greyscale.greyscale(0.5, false);
 
@@ -201,6 +204,17 @@
         //     }
         // }
 
+        // WIP
+        const selectSprite = (post: Post, postSprite: Sprite) => {
+            // TODO: Remove filters from unselected sprite
+            if (selectedPostSprite) {
+                selectedPostSprite.filters = [contrast, pixelate];
+            }
+            selectedPostSprite = postSprite;
+            postSprite.filters = [contrast, pixelate, outline];
+            $id = post.postId.substring(5); // Remove POST#
+        };
+
         const createPostSprite = async (post: Post) => {
             // const postSprite = post.files[0].at(-1) === "f" ? await Assets.load(getPostURL(post.id, post.files[0])) : new Sprite(await Assets.load(getPostURL(post.id, post.files[0])))
 
@@ -226,22 +240,14 @@
                 postSprite.scale.set((maxArea / area) * scale);
             }
 
-            const contrast = new ColorMatrixFilter();
-            contrast.contrast(0.5, false);
-
             // if (post.id !== $id) {
             postSprite.on("pointerdown", (event) => {
-                if (selectedPostSprite) {
-                    selectedPostSprite.filters = [contrast, pixelate];
-                }
-                selectedPostSprite = postSprite;
-                postSprite.filters = [contrast, pixelate, outline];
-                $id = post.postId.substring(5); // Remove POST#
+                selectSprite(post, postSprite);
             });
 
             postSprite.on("pointerover", (event) => {
                 postSprite.filters = [contrast, pixelate, currentPostOutline];
-                contrast.contrast(0.5, true);
+                // contrast.contrast(0.5, true);
                 hoverText.text = post.title;
 
                 corkDOM.style.cursor = "pointer";
@@ -392,7 +398,8 @@
 
             // if (text) {
             let found = 0;
-            let lastFoundPost;
+            let lastFoundPost: Post | undefined;
+            let lastFoundSprite: Sprite | undefined;
 
             // TODO: Full text search using the api (like in 5beam)
             for (const [post, sprite] of postMap) {
@@ -401,11 +408,14 @@
                 if (match) {
                     found += 1;
                     lastFoundPost = post;
+                    lastFoundSprite = sprite;
                 }
             }
 
             if (found === 1) {
-                hoverText.text = lastFoundPost.title;
+                hoverText.text = lastFoundPost!.title;
+                selectedPostSprite = postMap.get(lastFoundPost!)!;
+                selectSprite(lastFoundPost!, lastFoundSprite!);
             } else {
                 hoverText.text = found ? `Found ${found} results` : "No results found";
             }

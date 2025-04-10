@@ -5,7 +5,7 @@ import type { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import type { S3Client } from "@aws-sdk/client-s3";
 
 declare global {
-    declare namespace App {
+    namespace App {
         // interface Error {}
         interface Locals {
             db: DynamoDBClient;

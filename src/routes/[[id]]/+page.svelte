@@ -6,7 +6,6 @@
         id,
         loading,
         posts,
-        refresh,
         thread,
         boardStage,
         creatingPostImageBlob,
@@ -30,6 +29,9 @@
     $id = data.id;
 
     $posts = data.board;
+
+    let settingsPage = $state(false);
+
     onMount(() => {
         id.subscribe(async (v) => {
             if (v === undefined) return;
@@ -47,44 +49,45 @@
             $loading = false;
             console.log("SELECTED ID", $id);
         });
-    });
 
-    // Gives us updates on new posts & replies.
-    const updateWebSocket = new WebSocket(
-        "wss://f59d4c8ub7.execute-api.eu-west-2.amazonaws.com/$default"
-    );
-    let dead = false;
-    updateWebSocket.onopen = () => {
-        console.log("Connected to WebSocket API");
-        dead = false;
-    };
-    updateWebSocket.onmessage = async (event) => {
-        console.log("WEBSOCKET", event.data);
-        const { newPosts, newReplies }: { newPosts: string[]; newReplies: string[] } = JSON.parse(
-            event.data
+        const refresh = async () => posts.set(await (await fetch(`/api/board`)).json());
+
+        // Gives us updates on new posts & replies.
+        const updateWebSocket = new WebSocket(
+            "wss://f59d4c8ub7.execute-api.eu-west-2.amazonaws.com/$default"
         );
-        if (newPosts) {
-            await refresh();
-        }
-
-        if (newReplies) {
-            for (const newReply of newReplies) {
-                // TODO: We could optimize this by only messaging users with new replies in the thread currently on by adding a "currentThread" column to the connections table
-                // Only update if its the current thread
-                if (newReply.substring(5) === $id) {
-                    $thread = await (await fetch(`/api/post?id=${$id}`)).json();
-                }
+        let dead = false;
+        updateWebSocket.onopen = () => {
+            console.log("Connected to WebSocket API");
+            dead = false;
+        };
+        updateWebSocket.onmessage = async (event) => {
+            console.log("WEBSOCKET", event.data);
+            const { newPosts, newReplies }: { newPosts: string[]; newReplies: string[] } =
+                JSON.parse(event.data);
+            if (newPosts) {
+                await refresh();
             }
-            await refresh();
-        }
-    };
-    updateWebSocket.onclose = () => {
-        console.log("WebSocket connection closed");
-        dead = true;
-    };
-    updateWebSocket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-    };
+
+            if (newReplies) {
+                for (const newReply of newReplies) {
+                    // TODO: We could optimize this by only messaging users with new replies in the thread currently on by adding a "currentThread" column to the connections table
+                    // Only update if its the current thread
+                    if (newReply.substring(5) === $id) {
+                        $thread = await (await fetch(`/api/post?id=${$id}`)).json();
+                    }
+                }
+                await refresh();
+            }
+        };
+        updateWebSocket.onclose = () => {
+            console.log("WebSocket connection closed");
+            dead = true;
+        };
+        updateWebSocket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+        };
+    });
 
     const enterSubmit = (e: KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -117,7 +120,6 @@
         });
     };
 
-    let settingsPage = $state(false);
     const createPost = () => {
         $creatingPostFormData.set("creator", "4jfbbn1krnrsspo"); // Anonymous
 
@@ -134,7 +136,7 @@
             $boardStage = BoardStage.Placed;
             $loading = false;
             $id = postId;
-            await refresh();
+            // await refresh();
         }).catch((err) => {
             console.error(err);
             alert(`Error... DM Zelo101 with a screenshot of the error:\n\n${err.message}`);

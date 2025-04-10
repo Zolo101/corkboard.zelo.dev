@@ -55,5 +55,3 @@ export const creatingPostImageBlob = writable<File>();
 export const creatingReply = writable(false);
 export const thread = writable<Thread | undefined>();
 export const posts = writable<Post[]>([]);
-
-export const refresh = async () => posts.set(await (await fetch(`/api/board`)).json());

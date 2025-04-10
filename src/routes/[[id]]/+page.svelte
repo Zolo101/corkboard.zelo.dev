@@ -205,14 +205,14 @@
 {/snippet}
 
 <a href="https://corkboard.zelo.dev/">
-    <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5" />
+    <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5 brightness-150 grayscale" />
 </a>
 <div class="mx-5 flex justify-center gap-5 max-lg:flex-col">
     <div class="top-5 mb-5 flex grow flex-col items-center gap-2 lg:sticky">
         <Corkboard />
         <div id="menu" class="flex w-1/2 justify-center gap-3">
             <button
-                class="cb-input flex h-16 min-w-16 cursor-pointer items-center justify-center bg-green-400 text-5xl hover:bg-green-500"
+                class="cb-input bg-green-400 text-5xl ring-green-500 hover:bg-green-500"
                 onclick={operateCreatingPostStage}
                 ><img src={CreateIcon} alt="Create" width="64" height="64" class="p-3" /></button
             >
@@ -220,11 +220,11 @@
                 type="text"
                 name="search"
                 placeholder="Search"
-                class="cb-mask cb-border flex h-16 grow items-center justify-center bg-white p-4 text-3xl dark:bg-neutral-600"
+                class="cb-mask cb-border flex h-16 grow items-center justify-center rounded bg-white p-4 text-3xl ring-2 ring-neutral-800 dark:bg-neutral-700 dark:text-gray-300"
                 oninput={(s) => ($searchText = s.target.value.trim())}
             />
             <button
-                class="cb-input flex h-16 min-w-16 cursor-pointer items-center justify-center bg-neutral-400 text-5xl hover:bg-neutral-500"
+                class="cb-input bg-neutral-400 text-5xl ring-neutral-500 hover:bg-neutral-500"
                 onclick={() => (settingsPage = !settingsPage)}
                 ><img
                     src={SettingsIcon}
@@ -236,7 +236,7 @@
             >
             <a
                 href="https://discord.gg/YVuuF9KB5j"
-                class="cb-input flex h-16 min-w-16 cursor-pointer items-center justify-center bg-indigo-400 text-5xl hover:bg-indigo-500"
+                class="cb-input bg-indigo-400 text-5xl ring-indigo-500 hover:bg-indigo-500"
                 ><img src={DiscordIcon} alt="Discord Link" width="64" height="64" class="p-2" /></a
             >
         </div>
@@ -255,14 +255,14 @@
                 }}
             >
                 <div
-                    class="cb-border cb-mask flex flex-col gap-2 bg-white px-4 py-4 dark:bg-neutral-600"
+                    class="cb-border cb-mask flex flex-col gap-2 rounded bg-white px-4 py-4 dark:bg-neutral-500"
                 >
                     <input
                         type="text"
                         name="title"
                         placeholder="Title"
                         maxlength="128"
-                        class="bg-white text-4xl dark:bg-neutral-600 dark:text-neutral-100"
+                        class="rounded bg-white px-2 py-1 text-4xl dark:bg-neutral-700 dark:text-neutral-100"
                         oninput={(s) => ($creatingPostTitleText = s.target.value.trim())}
                         required
                     />
@@ -271,7 +271,7 @@
                         placeholder="Message"
                         maxlength="4096"
                         required
-                        class="bg-white dark:bg-neutral-600 dark:text-neutral-100"
+                        class="rounded bg-white px-2 py-1 dark:bg-neutral-700 dark:text-neutral-100"
                     ></textarea>
                     <div class="flex justify-center gap-4">
                         <input
@@ -310,7 +310,7 @@
     </div>
     {#if $thread}
         <!--{console.log("e", $post)}-->
-        <div class="cb-mask grow-[2] bg-[#f2e9e9] px-4 dark:bg-[#4a4241] dark:text-gray-300">
+        <div class="cb-mask grow-[2] px-4 dark:text-gray-300">
             <!--{#each data.post as reply}-->
             <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
             <div>
@@ -344,7 +344,7 @@
                 enctype="multipart/form-data"
                 onsubmit={createReply}
             >
-                <div class="mt-2 flex flex-col bg-white p-0.5 dark:bg-neutral-600">
+                <div class="mt-2 flex flex-col rounded bg-white p-0.5 dark:bg-neutral-500">
                     <textarea
                         name="content"
                         placeholder="↵ to Send, Shift + ↵ for new line"

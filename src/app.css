@@ -17,7 +17,8 @@ body {
     @apply h-full w-full dark:bg-black; /* max-sm:w-full*/
 
     /*By giving a hex fallback, we dont flash-bang the user for a second */
-    background: #cc9a73 url("$lib/assets/background_2.png");
+    /* background: #cc9a73 url("$lib/assets/background_2.png"); */
+    background: #535353;
     /*background: #cc9a73 url("$lib/assets/background_alpha_less.png");*/
 }
 
@@ -37,11 +38,11 @@ body {
 .cb-mask {
     /*background-image: url("$lib/assets/background_alpha_2.png");*/
 
-    border-image-source: url("$lib/assets/post.png");
+    /* border-image-source: url("$lib/assets/post.png");
     border-image-slice: 25;
     border-image-repeat: stretch;
     border-image-width: 15px;
-    border-image-outset: 8px;
+    border-image-outset: 8px; */
 
     /*mask-border: url("$lib/assets/post_mask.png");*/
     /*mask-border-slice: 144;*/
@@ -49,11 +50,11 @@ body {
 }
 
 .cb-border {
-    border-image-source: url("$lib/assets/post3thin.png");
+    /* border-image-source: url("$lib/assets/post3thin.png");
     border-image-slice: 5;
     border-image-repeat: round;
     border-image-width: 8px;
-    border-image-outset: 3px;
+    border-image-outset: 3px; */
 }
 
 .cb-input {
@@ -65,13 +66,13 @@ body {
     /*mask-border-slice: 144;*/
     /*mask-border-width: 500px;*/
 
-    border-image-source: url("$lib/assets/post3thin.png");
+    /* border-image-source: url("$lib/assets/post3thin.png");
     border-image-slice: 5;
     border-image-repeat: round;
     border-image-width: 8px;
-    border-image-outset: 3px;
+    border-image-outset: 3px; */
 
-    @apply cursor-pointer transition-colors;
+    @apply cursor-pointer transition-colors flex h-16 min-w-16 rounded shadow ring-2 items-center justify-center;
 }
 
 ::-webkit-scrollbar {

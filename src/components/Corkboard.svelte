@@ -7,6 +7,8 @@
         BitmapText,
         ColorMatrixFilter,
         Container,
+        Graphics,
+        LightenBlend,
         Sprite,
         Texture,
         TilingSprite
@@ -29,7 +31,7 @@
     import dotsURL from "$lib/assets/dots.png";
     import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
     import type { Post } from "../app";
-    import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
+    import { DropShadowFilter, GrayscaleFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
 
     const getPostURL = (id: string) =>
         `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
@@ -57,18 +59,38 @@
         // loadingGIF.scale.set(1)
         loading.subscribe((loading) => (loadingGIF.alpha = loading ? 0.5 : 0));
 
-        const boardTexture = await Assets.load(boardURL);
-        const borderTexture = await Assets.load(borderURL);
+        // const boardTexture = await Assets.load(boardURL);
+        // const borderTexture = await Assets.load(borderURL);
         const dotsTexture = await Assets.load(dotsURL);
 
         const previewImage = new Sprite();
         const postContainer = new Container();
+        // const board = new Sprite(boardTexture);
+        const boardGraphic = new Graphics();
+        const outlineWidth = 10;
+        boardGraphic.roundRect(
+            outlineWidth,
+            outlineWidth,
+            640 - outlineWidth * 2,
+            480 - outlineWidth * 2,
+            5 * scale
+        );
+        boardGraphic.stroke({ width: outlineWidth, color: 0x000000, alpha: 0.5 });
+        boardGraphic.fill({
+            color: 0xffffff,
+            alpha: 0.2
+        });
+
+        // This is so that we can use tint
+        const boardTexture = app.renderer.generateTexture(boardGraphic);
         const board = new Sprite(boardTexture);
-        const border = new Sprite(borderTexture);
+
+        // const border = new Sprite(borderTexture);
         const dots = new TilingSprite({
             texture: dotsTexture,
-            width: 610 * 2,
-            height: 470 * 2
+            width: 640 - outlineWidth * 3,
+            height: 480 - outlineWidth * 3,
+            tileScale: { x: 0.4, y: 0.4 }
         });
         const hoverText = new BitmapText({
             text: defaultHoverText,
@@ -80,10 +102,9 @@
                 wordWrapWidth: 560
             }
         });
-        hoverText.position.set(40, 20);
-        dots.position.set(20, 5);
-        dots.scale.set(0.5);
-        dots.alpha = 0.75;
+        hoverText.position.set(20, 20);
+        dots.position.set(outlineWidth);
+        dots.alpha = 0.3;
         previewImage.position.set(320, 240);
         previewImage.anchor.set(0.5, 0.5);
 
@@ -96,6 +117,9 @@
 
         const globalContrast = new ColorMatrixFilter();
         globalContrast.contrast(0.5, false);
+
+        const greyscale = new ColorMatrixFilter();
+        greyscale.greyscale(0.5, false);
 
         const outline = new OutlineFilter({ thickness: 2, color: 0xfdb896 });
         const hoverTextOutline = new OutlineFilter({
@@ -149,17 +173,18 @@
             // resolution: 1,
         });
 
+        dots.filters = [greyscale];
         hoverText.filters = [hoverTextOutline, hoverTextDropShadow];
         loadingGIF.filters = [pixelate];
-        previewImage.filters = [globalContrast, pixelate];
+        previewImage.filters = [pixelate, globalContrast];
 
         board.interactive = true;
         board.addEventListener("pointermove", (event) => {
             if (event.global.y < 150) {
-                hoverText.position.set(30, 510 - hoverText.height);
+                hoverText.position.set(20, 510 - hoverText.height);
                 hoverText.anchor.set(0, 1);
             } else {
-                hoverText.position.set(40, 20);
+                hoverText.position.set(20, 20);
                 hoverText.anchor.set(0, 0);
             }
         });
@@ -249,7 +274,7 @@
         //     postMap.get(v).filters = [globalContrast, pixelate, currentPostOutline, dropShadow]
         // })
 
-        app.stage.addChild(border);
+        // app.stage.addChild(border);
         app.stage.addChild(hoverText);
         app.stage.addChild(loadingGIF);
         app.stage.addChild(previewImage);
@@ -288,15 +313,15 @@
                     previewImage.addEventListener("pointerdown", (_) => (selected = true));
                     previewImage.addEventListener("pointerup", (_) => (selected = false));
                     previewImage.addEventListener("pointermove", (e) => {
-                        const bounds = previewImage.getBounds();
+                        const bounds = previewImage.getBounds().scale(1 / scale);
 
                         if (selected)
                             previewImage.position.set(e.globalX / scale, e.globalY / scale);
                         const outsideBoard =
-                            bounds.left < 20 ||
-                            bounds.top < 18 ||
-                            bounds.right > 613 ||
-                            bounds.bottom > 463;
+                            bounds.left < dots.x ||
+                            bounds.top < dots.y ||
+                            bounds.right > dots.x + dots.width ||
+                            bounds.bottom > dots.y + dots.height; // Updated to include bottom check
 
                         // console.log(previewImage.getBounds().left, previewImage.getBounds().top, previewImage.getBounds().right, previewImage.getBounds().bottom)
                         previewImage.filters = outsideBoard

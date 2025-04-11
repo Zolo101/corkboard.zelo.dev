@@ -18,3 +18,15 @@ export const createdDateFormatter = (createdString: string) => {
 
     return `${created.toLocaleDateString()} at ${time}`;
 };
+
+export const scaleImage = (width: number, height: number) => {
+    const imageArea = width * height;
+    const maxArea = 10000; // 100 x 100
+    const scaleFactor = Math.sqrt(maxArea / imageArea);
+    let newWidth = Math.round(width * scaleFactor);
+    let newHeight = Math.round(height * scaleFactor);
+
+    newWidth = Math.min(newWidth, 100);
+    newHeight = Math.min(newHeight, 100);
+    return { width: newWidth, height: newHeight };
+};

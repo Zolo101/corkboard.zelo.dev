@@ -32,6 +32,7 @@
     import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
     import type { Post } from "../app";
     import { DropShadowFilter, GrayscaleFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
+    import { scaleImage } from "$lib/clientUtils";
 
     const getPostURL = (id: string) =>
         `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
@@ -161,7 +162,7 @@
             color: 0x000000,
             // alpha: 1,
             blur: 5,
-            quality: 1
+            quality: 3
             // rotation: Math.PI / 6,
             // resolution: 1,
         });
@@ -215,13 +216,36 @@
             $id = post.postId.substring(5); // Remove POST#
         };
 
+        const loadAsset = async (url: string) => {
+            const maxAttempts = 5;
+            const delay = 200; // ms
+
+            // 200 delay then 400 delay then 600...
+            for (let i = 0; i < maxAttempts; i++) {
+                try {
+                    return await Assets.load(url);
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} failed to load asset: ${url}`, error);
+                    if (i === maxAttempts - 1) {
+                        throw new Error(
+                            `Failed to load asset after ${maxAttempts} attempts: ${url}`
+                        );
+                    }
+
+                    // sleep
+                    await new Promise((resolve) => setTimeout(resolve, delay * i));
+                }
+            }
+        };
+
         const createPostSprite = async (post: Post) => {
             // const postSprite = post.files[0].at(-1) === "f" ? await Assets.load(getPostURL(post.id, post.files[0])) : new Sprite(await Assets.load(getPostURL(post.id, post.files[0])))
 
             // Posts are required to have at least one file
             const firstFile = post.files[0]!;
             // const postSprite = new Sprite(await Assets.load(boardURL));
-            const postSprite = new Sprite(await Assets.load(getPostURL(firstFile)));
+
+            const postSprite = new Sprite(await loadAsset(getPostURL(firstFile)));
             postMap.set(post, postSprite);
             // await swapSpriteWithPost(postSprite, firstFile)
             // const postSprite = new Image(postTexture)
@@ -232,13 +256,15 @@
             postSprite.x = post.x;
             postSprite.y = post.y;
             postSprite.eventMode = "dynamic";
-            let area = postSprite.width * postSprite.height;
+            // let area = postSprite.width * postSprite.height;
             // let maxArea = 200 * 200
-            let maxArea = 100 * 100;
+            // let maxArea = 100 * 100;
             // let maxArea = 150 * 150
-            if (area > maxArea) {
-                postSprite.scale.set((maxArea / area) * scale);
-            }
+            // if (area > maxArea) {
+            //     postSprite.scale.set((maxArea / area) * scale);
+            // }
+            const { width, height } = scaleImage(postSprite.width, postSprite.height);
+            postSprite.setSize(width, height);
 
             // if (post.id !== $id) {
             postSprite.on("pointerdown", (event) => {
@@ -263,6 +289,8 @@
 
             postSprite.filters = [contrast, pixelate];
 
+            // $id = post.postId;
+            // $loading = false;
             postContainer.addChild(postSprite);
         };
 
@@ -383,10 +411,8 @@
                 console.log(texture);
                 previewImage.texture = texture;
 
-                // 177x100f
-                let scaleX = 177 / texture.width;
-                let scaleY = 100 / texture.height;
-                previewImage.scale.set(Math.min(scaleX, scaleY));
+                const { width, height } = scaleImage(previewImage.width, previewImage.height);
+                previewImage.setSize(width, height);
             }
         });
 

@@ -26,7 +26,8 @@ const pureKey = (key: string) => key.substring(3);
 
 export const resizer = async (event: any) => {
     const S3 = new S3Client();
-    const key = event.Records[0].s3.object.key;
+    // If we don't decode, some keys will be invalid (for example brackets in file names)
+    const key = decodeURI(event.Records[0].s3.object.key);
     console.log("Resizing", key);
 
     const { Body, ContentType } = await S3.send(

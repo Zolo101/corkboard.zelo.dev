@@ -146,8 +146,12 @@
         call.then(async (result) => {
             const postId = await result.json();
             $boardStage = BoardStage.Placed;
+
+            // removing these two because the resizer does not resize in time for the image to be shown
+            // so instead im doing this at the createPostSprite function in Corkboard.svelte
             $loading = false;
             $id = postId;
+
             // await refresh();
         }).catch((err) => {
             console.error(err);
@@ -248,7 +252,7 @@
     <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5 brightness-150 grayscale" />
 </a>
 <main class="mx-5 flex justify-center gap-5 max-lg:flex-col">
-    <section class="top-5 mb-5 flex grow flex-col items-center gap-2 lg:sticky">
+    <section class="sticky top-5 mb-5 flex grow flex-col items-center gap-2">
         <Corkboard />
         <div id="menu" class="flex w-1/2 justify-center gap-3">
             <button
@@ -323,12 +327,12 @@
                             onchange={(s) => ($creatingPostImageBlob = s.target.files[0])}
                             required={false}
                         />
-                        <input
-                            type="submit"
-                            value="Post!"
-                            class="w-full cursor-pointer rounded bg-green-100 transition-colors hover:bg-green-300 dark:bg-green-600 dark:text-neutral-200 dark:hover:bg-green-700"
-                        />
                     </div>
+                    <input
+                        type="submit"
+                        value="Post!"
+                        class="cursor-pointer rounded bg-green-100 p-2 text-2xl transition-colors hover:bg-green-300 dark:bg-green-600 dark:text-neutral-200 dark:hover:bg-green-700"
+                    />
                     <!--                <p>The first image will be used in the corkboard.</p>-->
                 </div>
             </form>
@@ -344,7 +348,7 @@
         {/if}
         <!--            <img src="/corkboard/board.png"/>-->
         <!--            <img src="/corkboard/dots.png"/>-->
-        {#if !settingsPage}
+        {#if settingsPage}
             <!-- TODO: Create a settings component? -->
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
                 <div>

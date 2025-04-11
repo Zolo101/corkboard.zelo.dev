@@ -23,6 +23,7 @@
     import DiscordIcon from "$lib/assets/discord_icon.png";
     import Corkboard from "../../components/Corkboard.svelte";
     import type { PageData } from "./$types";
+    import Image from "../../components/Image.svelte";
 
     let { data }: { data: PageData } = $props();
     let replyForm: HTMLFormElement;
@@ -210,8 +211,8 @@
         {/if}
         {#if reply.files.length}
             {@const file = reply.files[0]}
-            <a href={getPostURLOG(file)} class="block h-full">
-                <img src={getPostURL200(file)} alt={file} class="m-2 inline outline outline-1" />
+            <a href={getPostURLOG(file)} class="block h-full *:outline *:outline-1">
+                <Image src={getPostURL200(file)} alt={file} />
             </a>
         {/if}
         {#if sameAuthorAbove}
@@ -346,8 +347,6 @@
                 onclick={createPost}
             />
         {/if}
-        <!--            <img src="/corkboard/board.png"/>-->
-        <!--            <img src="/corkboard/dots.png"/>-->
         {#if settingsPage}
             <!-- TODO: Create a settings component? -->
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
@@ -388,12 +387,7 @@
                 <div class="inline">
                     {#each $thread.post.files as file}
                         <a href={getPostURLOG(file)} class="block h-full">
-                            <img
-                                src={getPostURL200(file)}
-                                alt={file}
-                                class="inline"
-                                style="image-rendering: pixelated"
-                            />
+                            <Image src={getPostURL200(file)} alt={file} />
                         </a>
                     {/each}
                 </div>

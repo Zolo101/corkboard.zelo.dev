@@ -255,7 +255,7 @@
     <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5 brightness-150 grayscale" />
 </a>
 <main class="mx-5 flex justify-center gap-5 max-lg:flex-col">
-    <section class="sticky top-5 mb-5 flex grow flex-col items-center gap-2">
+    <section class="sticky top-5 mb-5 flex h-fit grow flex-col items-center gap-2">
         <Corkboard />
         <div id="menu" class="flex w-1/2 justify-center gap-3">
             <button

@@ -173,6 +173,8 @@
     const getPostURL200 = (id: string) =>
         `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
     const getPostURLOG = (id: string) => `https://drzkh14a10zed.cloudfront.net/${id}`;
+
+    let selectedImage = $state<string | null>(null);
 </script>
 
 <svelte:head>
@@ -181,7 +183,7 @@
         {@const content = sliced
             ? $thread.post.content.slice(0, 200) + "(...)"
             : $thread.post.content}
-        <title>corkboard - {$thread.post.title}</title>
+        <title>{$thread.post.title} - corkboard</title>
         <meta name="description" {content} />
         <!--        <meta property="og:image" content="https://embed.zelo.dev/corkboard-embedgen-sharp?id={$thread.post.postId}">-->
         <meta name="twitter:card" content="summary_large_image" />
@@ -211,9 +213,9 @@
         {/if}
         {#if reply.files.length}
             {@const file = reply.files[0]}
-            <a href={getPostURLOG(file)} class="block h-full *:outline *:outline-1">
+            <button onclick={() => (selectedImage = getPostURLOG(file))} class="block h-full">
                 <Image src={getPostURL200(file)} alt={file} />
-            </a>
+            </button>
         {/if}
         {#if sameAuthorAbove}
             <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
@@ -352,6 +354,13 @@
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
                 <div>
                     <h1 class="text-4xl">General</h1>
+                    <h2 class="text-2xl">Following</h2>
+                    <div class="flex gap-2">
+                        {#each ["Green", "Blue", "Red", "Purple", "Classic"] as item}
+                            {@render theme(item)}
+                        {/each}
+                    </div>
+                    <!-- <p class="text-sm text-zinc-900">Click to unfollow</p> -->
                     <h2 class="text-2xl">Themes</h2>
                     <div class="flex gap-2">
                         {#each ["Green", "Blue", "Red", "Purple", "Classic"] as item}
@@ -386,9 +395,12 @@
                 <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
                 <div class="inline">
                     {#each $thread.post.files as file}
-                        <a href={getPostURLOG(file)} class="block h-full">
+                        <button
+                            onclick={() => (selectedImage = getPostURLOG(file))}
+                            class="block h-full"
+                        >
                             <Image src={getPostURL200(file)} alt={file} />
-                        </a>
+                        </button>
                     {/each}
                 </div>
                 <span class="px-2.5 text-xl">{$thread.post.content}</span>
@@ -425,6 +437,25 @@
         </aside>
     {/if}
 </main>
+{#if selectedImage}
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+    <dialog open class="absolute inset-0 z-50 h-screen w-screen bg-black/50">
+        <!-- TODO: Allow users to upload alt text with images -->
+        <div class="fixed inset-0 flex items-center justify-center">
+            <img src={selectedImage} alt="" class="max-h-[90vh] max-w-[90vw]" />
+        </div>
+        <button
+            onclick={() => (selectedImage = null)}
+            class="fixed right-4 top-4 text-6xl text-white hover:text-neutral-300"
+        >
+            🗙
+        </button>
+    </dialog>
+{/if}
 
 <style>
     #logo {

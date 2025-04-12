@@ -13,7 +13,7 @@
         searchText,
         creatingPostFormData
     } from "../../app";
-    import type { Reply } from "../../app";
+    import type { Post, Reply } from "../../app";
     import { onMount } from "svelte";
     import { createdDateFormatter } from "$lib/clientUtils";
     import { pushState } from "$app/navigation";
@@ -24,6 +24,8 @@
     import Corkboard from "../../components/Corkboard.svelte";
     import type { PageData } from "./$types";
     import Image from "../../components/Image.svelte";
+    import { SvelteMap } from "svelte/reactivity";
+    import { settings } from "$lib/globals.svelte";
 
     let { data }: { data: PageData } = $props();
     let replyForm: HTMLFormElement;
@@ -35,6 +37,11 @@
     let settingsPage = $state(false);
 
     onMount(() => {
+        $effect(() => {
+            localStorage.setItem("corkboard_settings", JSON.stringify(settings));
+            console.log("SETTINGS", settings);
+        });
+
         id.subscribe(async (v) => {
             if (v === undefined) return;
             if (v === data.id) {
@@ -89,6 +96,14 @@
         updateWebSocket.onerror = (error) => {
             console.error("WebSocket error:", error);
         };
+
+        follows = new SvelteMap(
+            Object.entries(JSON.parse(localStorage.getItem("follows") || "{}"))
+        );
+
+        $effect(() => {
+            localStorage.setItem("follows", JSON.stringify(Object.fromEntries(follows)));
+        });
     });
 
     const enterSubmit = (e: KeyboardEvent) => {
@@ -175,6 +190,20 @@
     const getPostURLOG = (id: string) => `https://drzkh14a10zed.cloudfront.net/${id}`;
 
     let selectedImage = $state<string | null>(null);
+
+    let follows = $state(new SvelteMap<string, number>());
+
+    const followPost = (postId: string) => {
+        follows.set(postId, Date.now());
+    };
+
+    const isFollowing = (postId: string) => {
+        return follows.has(postId);
+    };
+
+    const unfollowPost = (postId: string) => {
+        follows.delete(postId);
+    };
 </script>
 
 <svelte:head>
@@ -190,6 +219,14 @@
     {:else}
         <title>corkboard</title>
         <meta name="description" content="Create a post and pin it to a board!" />
+    {/if}
+    {#if settings.normalFont}
+        <style>
+            body {
+                font-family: sans-serif !important;
+                font-weight: bold !important;
+            }
+        </style>
     {/if}
 </svelte:head>
 
@@ -225,11 +262,12 @@
     </div>
 {/snippet}
 
-{#snippet settingsOption(name: string, description?: string)}
+{#snippet settingsOption(name: string, key: string, description?: string)}
     <div>
         <label for={name}>{name}</label>
         <input
             {name}
+            bind:checked={settings[key]}
             type="checkbox"
             class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
         />
@@ -237,6 +275,21 @@
             <p class="mb-2 text-sm text-zinc-900">{description}</p>
         {/if}
     </div>
+{/snippet}
+
+{#snippet follow(postId: string)}
+    <!-- TODO: This will fail if posts gets deleted while followed -->
+    {@const post = $posts.find((p) => p.postId === postId)}
+    <button class="ring-2 ring-black" onclick={() => ($id = postId.slice(5))}>
+        <img
+            src={getPostURL200(post!.files[0])}
+            alt={post!.title}
+            title={post!.title}
+            class="h-16 w-16"
+            width="64"
+            height="64"
+        />
+    </button>
 {/snippet}
 
 {#snippet theme(name: string)}
@@ -255,8 +308,8 @@
     <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5 brightness-150 grayscale" />
 </a>
 <main class="mx-5 flex justify-center gap-5 max-lg:flex-col">
-    <section class="sticky top-5 mb-5 flex h-fit grow flex-col items-center gap-2">
-        <Corkboard />
+    <section class="top-5 mb-5 flex h-fit grow flex-col items-center gap-2 lg:sticky">
+        <Corkboard {follows} />
         <div id="menu" class="flex w-1/2 justify-center gap-3">
             <button
                 class="cb-input bg-green-400 text-5xl ring-green-500 hover:bg-green-500"
@@ -349,32 +402,40 @@
                 onclick={createPost}
             />
         {/if}
-        {#if settingsPage}
+        {#if !settingsPage}
             <!-- TODO: Create a settings component? -->
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
                 <div>
                     <h1 class="text-4xl">General</h1>
+                    {@render settingsOption("Follow on reply")}
                     <h2 class="text-2xl">Following</h2>
                     <div class="flex gap-2">
-                        {#each ["Green", "Blue", "Red", "Purple", "Classic"] as item}
-                            {@render theme(item)}
-                        {/each}
+                        {#if follows}
+                            {#each follows.keys() as ids}
+                                {@render follow(ids)}
+                            {/each}
+                        {/if}
                     </div>
+                    <br />
                     <!-- <p class="text-sm text-zinc-900">Click to unfollow</p> -->
-                    <h2 class="text-2xl">Themes</h2>
+                    <!-- <h2 class="text-2xl">Themes</h2>
                     <div class="flex gap-2">
                         {#each ["Green", "Blue", "Red", "Purple", "Classic"] as item}
                             {@render theme(item)}
                         {/each}
-                    </div>
+                    </div> -->
                 </div>
                 <div>
                     <h1 class="text-4xl">Accessibility</h1>
-                    {@render settingsOption("Normal Font")}
-                    {@render settingsOption("Reduce Motion")}
-                    {@render settingsOption("High Contrast")}
+                    <span class="text-sm text-zinc-900">
+                        You may need to refresh to see the changes.
+                    </span>
+                    {@render settingsOption("Sans Serif Font", "normalFont")}
+                    {@render settingsOption("Reduce Motion", "reduceMotion")}
+                    {@render settingsOption("High Contrast", "highContrast")}
                     {@render settingsOption(
                         "Screen-Reader accessible Corkboard",
+                        "screenReader",
                         "This will turn the Corkboard into a list."
                     )}
                 </div>
@@ -387,11 +448,32 @@
             <!--{#each data.post as reply}-->
             <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
             <div>
-                <span class="float-left max-sm:text-2xl">Anonymous</span>
-                <span class="float-right max-sm:text-2xl"
-                    >{createdDateFormatter($thread.post.created)}</span
-                >
-                <br />
+                <div class="flex justify-between">
+                    <div class="flex w-full">
+                        {#if isFollowing($thread.post.postId)}
+                            <button
+                                onclick={() => unfollowPost($thread.post.postId)}
+                                class="mr-1.5 h-6 bg-emerald-700 px-2 text-white"
+                            >
+                                Unfollow +
+                            </button>
+                        {:else}
+                            <button
+                                onclick={() => followPost($thread.post.postId)}
+                                class="mr-1.5 h-6 bg-emerald-600 px-2 text-white"
+                            >
+                                Follow +
+                            </button>
+                        {/if}
+                        <span class="mr-1.5 h-6 bg-neutral-700 px-2 text-white">?</span>
+                        <span class="max-sm:text-2xl">Anonymous</span>
+                    </div>
+                    <div class="w-full">
+                        <span class="max-sm:text-2xl"
+                            >{createdDateFormatter($thread.post.created)}</span
+                        >
+                    </div>
+                </div>
                 <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
                 <div class="inline">
                     {#each $thread.post.files as file}
@@ -443,7 +525,7 @@
             overflow: hidden;
         }
     </style>
-    <dialog open class="absolute inset-0 z-50 h-screen w-screen bg-black/50">
+    <dialog open class="fixed inset-0 z-50 h-screen w-screen bg-black/50">
         <!-- TODO: Allow users to upload alt text with images -->
         <div class="fixed inset-0 flex items-center justify-center">
             <img src={selectedImage} alt="" class="max-h-[90vh] max-w-[90vw]" />

@@ -7,8 +7,8 @@
         BitmapText,
         ColorMatrixFilter,
         Container,
+        Filter,
         Graphics,
-        LightenBlend,
         Sprite,
         Texture,
         TilingSprite
@@ -26,13 +26,13 @@
         creatingPostFormData
     } from "../app";
     import loadingURL from "$lib/assets/loading.gif";
-    import boardURL from "$lib/assets/board.png";
-    import borderURL from "$lib/assets/border.png";
     import dotsURL from "$lib/assets/dots.png";
     import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
     import type { Post } from "../app";
-    import { DropShadowFilter, GrayscaleFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
+    import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     import { scaleImage } from "$lib/clientUtils";
+
+    const { follows } = $props();
 
     const getPostURL = (id: string) =>
         `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
@@ -131,16 +131,21 @@
             thickness: 2,
             color: 0x000000
         });
+        const followingOutline = new OutlineFilter({
+            thickness: 3,
+            color: 0x00cccc,
+            alpha: 0.5
+        });
         const goodBoundingBox = new OutlineFilter({
-            thickness: 4,
+            thickness: 3,
             color: 0x00ff00
         });
         const badBoundingBox = new OutlineFilter({
-            thickness: 4,
+            thickness: 3,
             color: 0xff4000
         });
         const currentPostOutline = new OutlineFilter({
-            thickness: 4,
+            thickness: 3,
             color: 0xffffff,
             alpha: 0.5
         });
@@ -178,7 +183,7 @@
         dots.filters = [greyscale];
         hoverText.filters = [hoverTextOutline, hoverTextDropShadow];
         loadingGIF.filters = [pixelate];
-        previewImage.filters = [pixelate, globalContrast];
+        previewImage.filters = [globalContrast, pixelate];
 
         board.interactive = true;
         board.addEventListener("pointermove", (event) => {
@@ -235,6 +240,14 @@
             }
         };
 
+        // TODO: Rename, this does more than following...
+        const addFollowingFilter = (postSprite: Sprite, post: Post) => {
+            if (follows.get(post.postId)) {
+                postSprite.filters = [...(postSprite.filters as Filter[]), followingOutline];
+                postSprite.zIndex = Number.POSITIVE_INFINITY;
+            }
+        };
+
         const createPostSprite = async (post: Post) => {
             // const postSprite = post.files[0].at(-1) === "f" ? await Assets.load(getPostURL(post.id, post.files[0])) : new Sprite(await Assets.load(getPostURL(post.id, post.files[0])))
 
@@ -277,6 +290,7 @@
                 // Search: Check if the post is being filtered
                 if (postSprite.alpha !== searchAlpha) {
                     postSprite.filters = [contrast, pixelate, currentPostOutline];
+                    addFollowingFilter(postSprite, post);
                     // contrast.contrast(0.5, true);
                     hoverText.text = post.title;
 
@@ -288,15 +302,43 @@
                 if (selectedPostSprite !== postSprite) postSprite.filters = [contrast, pixelate];
                 contrast.contrast(0.5, false);
                 hoverText.text = defaultHoverText;
+                addFollowingFilter(postSprite, post);
 
                 if (corkDOM) corkDOM.style.cursor = "initial";
             });
 
             postSprite.filters = [contrast, pixelate];
+            addFollowingFilter(postSprite, post);
 
             // $id = post.postId;
             // $loading = false;
             postContainer.addChild(postSprite);
+
+            /*
+            if (follows.has(post.postId)) {
+                const x = await (await fetch(`/api/post?id=${post.postId.slice(5)}`)).json();
+                const followMessageContainer = new Container();
+                const followMessageCount = new BitmapText({
+                    text: `+${x.replies.length}`,
+                    style: {
+                        fontFamily: "VCR OSD Mono",
+                        fontSize: 6,
+                        letterSpacing: -1,
+                        fill: 0xffffff
+                    }
+                });
+                const followMessageBackground = new Graphics();
+                followMessageBackground.rect(0, 0, postSprite.width, followMessageCount.height + 4);
+                followMessageBackground.fill({ color: 0x00cccc, alpha: 0.75 });
+
+                followMessageContainer.addChild(followMessageBackground, followMessageCount);
+                followMessageContainer.position.set(postSprite.x, postSprite.y);
+                followMessageCount.position.set(5, 0);
+                followMessageContainer.zIndex = postSprite.zIndex + 1;
+
+                postContainer.addChild(followMessageContainer);
+            }
+            */
         };
 
         // console.log($posts)

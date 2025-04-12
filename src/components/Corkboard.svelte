@@ -63,6 +63,7 @@
         // const boardTexture = await Assets.load(boardURL);
         // const borderTexture = await Assets.load(borderURL);
         const dotsTexture = await Assets.load(dotsURL);
+        const searchAlpha = 0.1;
 
         const previewImage = new Sprite();
         const postContainer = new Container();
@@ -132,19 +133,16 @@
         });
         const goodBoundingBox = new OutlineFilter({
             thickness: 4,
-            color: 0x00ff00,
-            quality: 1
+            color: 0x00ff00
         });
         const badBoundingBox = new OutlineFilter({
             thickness: 4,
-            color: 0xff4000,
-            quality: 1
+            color: 0xff4000
         });
         const currentPostOutline = new OutlineFilter({
             thickness: 4,
             color: 0xffffff,
-            quality: 1,
-            alpha: 0.25
+            alpha: 0.5
         });
 
         const dropShadow = new DropShadowFilter({
@@ -172,7 +170,7 @@
             color: 0x000000,
             // alpha: 1,
             // blur: 2,
-            quality: 1
+            quality: 3
             // rotation: Math.PI / 6,
             // resolution: 1,
         });
@@ -218,14 +216,13 @@
 
         const loadAsset = async (url: string) => {
             const maxAttempts = 5;
-            const delay = 200; // ms
+            const delay = 400; // ms
 
-            // 200 delay then 400 delay then 600...
+            // 400 delay then 800 delay then 1200...
             for (let i = 0; i < maxAttempts; i++) {
                 try {
                     return await Assets.load(url);
                 } catch (error) {
-                    console.error(`Attempt ${i + 1} failed to load asset: ${url}`, error);
                     if (i === maxAttempts - 1) {
                         throw new Error(
                             `Failed to load asset after ${maxAttempts} attempts: ${url}`
@@ -246,6 +243,11 @@
             // const postSprite = new Sprite(await Assets.load(boardURL));
 
             const postSprite = new Sprite(await loadAsset(getPostURL(firstFile)));
+
+            // Most updated in front
+            const updatedAt = new Date(post.updated).getTime();
+            postSprite.zIndex = updatedAt;
+
             postMap.set(post, postSprite);
             // await swapSpriteWithPost(postSprite, firstFile)
             // const postSprite = new Image(postTexture)
@@ -272,11 +274,14 @@
             });
 
             postSprite.on("pointerover", (event) => {
-                postSprite.filters = [contrast, pixelate, currentPostOutline];
-                // contrast.contrast(0.5, true);
-                hoverText.text = post.title;
+                // Search: Check if the post is being filtered
+                if (postSprite.alpha !== searchAlpha) {
+                    postSprite.filters = [contrast, pixelate, currentPostOutline];
+                    // contrast.contrast(0.5, true);
+                    hoverText.text = post.title;
 
-                corkDOM.style.cursor = "pointer";
+                    if (corkDOM) corkDOM.style.cursor = "pointer";
+                }
             });
 
             postSprite.on("pointerout", (event) => {
@@ -284,7 +289,7 @@
                 contrast.contrast(0.5, false);
                 hoverText.text = defaultHoverText;
 
-                corkDOM.style.cursor = "initial";
+                if (corkDOM) corkDOM.style.cursor = "initial";
             });
 
             postSprite.filters = [contrast, pixelate];
@@ -417,11 +422,6 @@
         });
 
         searchText.subscribe((text) => {
-            if (text.length === 0) {
-                hoverText.text = "Hover over a post to see its title!";
-                return;
-            }
-
             // if (text) {
             let found = 0;
             let lastFoundPost: Post | undefined;
@@ -430,12 +430,17 @@
             // TODO: Full text search using the api (like in 5beam)
             for (const [post, sprite] of postMap) {
                 const match = post.title.includes(text);
-                sprite.alpha = match ? 1 : 0.2;
+                sprite.alpha = match ? 1 : searchAlpha;
                 if (match) {
                     found += 1;
                     lastFoundPost = post;
                     lastFoundSprite = sprite;
                 }
+            }
+
+            if (text.length === 0) {
+                hoverText.text = "Hover over a post to see its title!";
+                return;
             }
 
             if (found === 1) {

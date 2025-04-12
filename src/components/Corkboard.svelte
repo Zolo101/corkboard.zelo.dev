@@ -360,9 +360,16 @@
         app.stage.addChild(loadingGIF);
         app.stage.addChild(previewImage);
 
-        app.ticker.add((delta) => {
+        const dotsMovement = app.ticker.add((delta) => {
             dots.tilePosition.x -= travelSpeed * delta.deltaTime;
             dots.tilePosition.y -= travelSpeed * delta.deltaTime;
+        });
+
+        const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        motion.addEventListener("change", (e) => {
+            if (e.matches) {
+                dotsMovement.speed = 0;
+            }
         });
 
         boardStage.subscribe((bs) => {

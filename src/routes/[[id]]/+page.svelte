@@ -407,7 +407,8 @@
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
                 <div>
                     <h1 class="text-4xl">General</h1>
-                    {@render settingsOption("Follow on reply")}
+                    {@render settingsOption("Follow on reply", "followOnReply")}
+                    <br />
                     <h2 class="text-2xl">Following</h2>
                     <div class="flex gap-2">
                         {#if follows}
@@ -427,17 +428,15 @@
                 </div>
                 <div>
                     <h1 class="text-4xl">Accessibility</h1>
-                    <span class="text-sm text-zinc-900">
+                    <!-- <span class="text-sm text-zinc-900">
                         You may need to refresh to see the changes.
-                    </span>
+                    </span> -->
                     {@render settingsOption("Sans Serif Font", "normalFont")}
-                    {@render settingsOption("Reduce Motion", "reduceMotion")}
-                    {@render settingsOption("High Contrast", "highContrast")}
-                    {@render settingsOption(
-                        "Screen-Reader accessible Corkboard",
+                    <!-- {@render settingsOption(
+                        "Screen reader accessible corkboard",
                         "screenReader",
-                        "This will turn the Corkboard into a list."
-                    )}
+                        "This will turn the corkboard into a list."
+                    )} -->
                 </div>
             </section>
         {/if}

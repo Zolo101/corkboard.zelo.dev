@@ -1,13 +1,13 @@
 import { error, json, type RequestHandler } from "@sveltejs/kit";
-import { getPost, postPost } from "$lib/REST";
-import { uploadFiles } from "$lib/S3";
+import { getPost, postPost } from "$lib/server/REST";
+import { uploadFiles } from "$lib/server/S3";
 
 export const GET: RequestHandler = async ({ locals: { db }, url }) => {
     const id = url.searchParams.get("id");
     return json(await getPost(db, id ?? "-1"));
 };
 
-export const POST: RequestHandler = async ({ locals: { db, s3 }, request }) => {
+export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getClientAddress }) => {
     // TODO: Dirty!
     const body = await request.formData();
     if (body.has("files")) {
@@ -27,7 +27,9 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request }) => {
             return error(500, "Failed to upload files");
         }
 
-        const postId = await postPost(db, body, stringKeys as string[]);
+        // Used for anonymous seperation
+        const ip = getClientAddress();
+        const postId = await postPost(db, ip, body, stringKeys as string[]);
 
         if (postId) {
             return json(postId);

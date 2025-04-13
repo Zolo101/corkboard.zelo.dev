@@ -1,8 +1,8 @@
 import { error, json, type RequestHandler, text } from "@sveltejs/kit";
-import { getPost, postReply } from "$lib/REST";
-import { uploadFiles } from "$lib/S3";
+import { getPost, postReply } from "$lib/server/REST";
+import { uploadFiles } from "$lib/server/S3";
 
-export const POST: RequestHandler = async ({ locals: { db, s3 }, request }) => {
+export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getClientAddress }) => {
     // TODO: Dirty!
     const body = await request.formData();
 
@@ -26,8 +26,10 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request }) => {
         }
     }
 
+    // Used for anonymous seperation
+    const ip = getClientAddress();
     const postId = body.get("postId") as string;
-    const replyId = await postReply(db, postId, body, FileKey);
+    const replyId = await postReply(db, ip, postId, body, FileKey);
 
     if (replyId) {
         // TODO: Is there a better way to return?

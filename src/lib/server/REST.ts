@@ -7,7 +7,7 @@ import {
 import { Resource } from "sst";
 import { TwitterSnowflake } from "@sapphire/snowflake";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import type { Post, Thread } from "../app";
+import type { Post, Thread } from "../../app";
 
 export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread> => {
     // const { Item } = await db.send(new GetItemCommand({
@@ -38,7 +38,7 @@ export const getPost = async (db: DynamoDBClient, postId: string): Promise<Threa
     };
 };
 
-export const postPost = async (db: DynamoDBClient, body: any, files: string[]) => {
+export const postPost = async (db: DynamoDBClient, ip: string, body: any, files: string[]) => {
     // console.log(body)
     // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html
     const postId = TwitterSnowflake.generate().toString();
@@ -69,6 +69,7 @@ export const postPost = async (db: DynamoDBClient, body: any, files: string[]) =
 
 export const postReply = async (
     db: DynamoDBClient,
+    ip: string,
     postId: string,
     body: any,
     fileKey?: string

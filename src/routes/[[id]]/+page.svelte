@@ -12,10 +12,10 @@
         creatingPostTitleText,
         searchText,
         creatingPostFormData
-    } from "../../app";
-    import type { Post, Reply } from "../../app";
+    } from "../../lib/index.svelte";
+    import type { Post, Reply } from "$lib/index.svelte";
     import { onMount } from "svelte";
-    import { createdDateFormatter } from "$lib/clientUtils";
+    import { createdDateFormatter } from "$lib/client/clientUtils";
     import { pushState } from "$app/navigation";
     import Logo from "$lib/assets/logo.png";
     import CreateIcon from "$lib/assets/create_icon.png";
@@ -39,7 +39,7 @@
     onMount(() => {
         $effect(() => {
             localStorage.setItem("corkboard_settings", JSON.stringify(settings));
-            console.log("SETTINGS", settings);
+            // console.log("SETTINGS", settings);
         });
 
         id.subscribe(async (v) => {

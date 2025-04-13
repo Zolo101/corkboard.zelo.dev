@@ -30,3 +30,21 @@ export const scaleImage = (width: number, height: number) => {
     newHeight = Math.min(newHeight, 100);
     return { width: newWidth, height: newHeight };
 };
+
+// TODO: I don't like this (because of the regex :P)
+export const hashToColor = (ipHash: string | undefined) => {
+    if (!ipHash) return "#ffffff";
+
+    const colorHex = ipHash.substring(0, 6);
+
+    // Ensure it's a valid hex color by checking each pair of digits
+    const validHex = colorHex
+        .split("")
+        .map((char) => {
+            // If the character is not a valid hex digit, replace it with '0'
+            return /[0-9A-Fa-f]/.test(char) ? char : "f";
+        })
+        .join("");
+
+    return `#${validHex}`;
+};

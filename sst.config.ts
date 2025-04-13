@@ -91,17 +91,11 @@ export default $config({
         });
 
         // I think I'm going to just go with IP
-        // Anonymous User Pool
-        // new sst.aws.CognitoUserPool("UserPool", {
-        //
-        // })
-
-        // Web Push Notifications
-        new sst.aws.SnsTopic("Notifications", {});
+        const IPHashSalt = new sst.Secret("IPHashSalt");
 
         // Frontend
         new sst.aws.SvelteKit("Site", {
-            link: [media, posts]
+            link: [media, posts, IPHashSalt]
         });
     }
 });

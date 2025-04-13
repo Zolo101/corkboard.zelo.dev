@@ -6,7 +6,7 @@ export type Thread = {
 };
 
 type Base = {
-    creator: string; // user id based on ip
+    creator: string; // Hashed IP
     postId: string;
     replyId: string;
     content: string;
@@ -17,19 +17,6 @@ type Base = {
 
 export type Post = Base & {
     title: string;
-    x: number;
-    y: number;
-};
-
-export type PostOld = {
-    id: string;
-    creator: string;
-    files: string[];
-    title: string;
-    content: string;
-    totalReplies: number;
-    created: Date;
-    updated: Date;
     x: number;
     y: number;
 };

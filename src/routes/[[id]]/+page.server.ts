@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "../../../.svelte-kit/types/src/routes/[[id]]/$types";
-import { getBoard, getPost } from "../../lib/server/REST";
+import { getBoard, getPost } from "$lib/server/REST";
 
 export const load: PageServerLoad = async ({ locals: { db }, params }) => {
     const board = await getBoard(db);

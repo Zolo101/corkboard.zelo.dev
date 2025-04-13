@@ -12,10 +12,10 @@
         creatingPostTitleText,
         searchText,
         creatingPostFormData
-    } from "../../lib/index.svelte";
+    } from "$lib/index.svelte";
     import type { Post, Reply } from "$lib/index.svelte";
     import { onMount } from "svelte";
-    import { createdDateFormatter } from "$lib/client/clientUtils";
+    import { createdDateFormatter, hashToColor } from "$lib/client/clientUtils";
     import { pushState } from "$app/navigation";
     import Logo from "$lib/assets/logo.png";
     import CreateIcon from "$lib/assets/create_icon.png";
@@ -129,7 +129,6 @@
 
         formData.append("postId", $id);
         // formData.append("creator", "4jfbbn1krnrsspo")
-        console.log([...formData.entries()]);
 
         const call = fetch("/api/reply", {
             method: "POST",
@@ -204,6 +203,8 @@
     const unfollowPost = (postId: string) => {
         follows.delete(postId);
     };
+
+    const getUsername = (creator: string) => (creator ? "Anonymous" : "Unknown");
 </script>
 
 <svelte:head>
@@ -231,23 +232,31 @@
 </svelte:head>
 
 {#snippet r(reply: Reply, index: number)}
-    <!--{@const sameAuthorAbove = $thread.replies[index - 1]}-->
-    {@const sameAuthorAbove = true}
+    {@const previousReply = $thread?.replies[index - 1]}
+    {@const sameAuthorAbove = previousReply?.creator === reply.creator}
+    {@const similarTimeAsAbove =
+        previousReply &&
+        Math.abs(new Date(reply.created).getTime() - new Date(previousReply.created).getTime()) <
+            3600000}
     <!-- TODO: This has a problem of if replies are in 1 minute intervals it'll never show the time-->
-    {@const similarTimeAsAbove = true}
     <div>
-        {#if !sameAuthorAbove}
-            <span class="float-left text-sm max-sm:text-xs">Anonymous</span>
-        {/if}
-        {#if similarTimeAsAbove}
-            <span class="float-right text-xs opacity-25 max-sm:text-xs"
-                >{createdDateFormatter(reply.created)}</span
-            >
-        {:else}
-            <span class="float-right text-sm max-sm:text-xs"
-                >{createdDateFormatter(reply.created)}</span
-            >
-        {/if}
+        <div
+            class="flex flex-row-reverse justify-between"
+            style="height: {!sameAuthorAbove ? '100%' : '0'}"
+        >
+            {#if similarTimeAsAbove}
+                <span class="text-xs opacity-25 max-sm:text-xs"
+                    >{createdDateFormatter(reply.created)}</span
+                >
+            {:else}
+                <span class="text-sm max-sm:text-xs">{createdDateFormatter(reply.created)}</span>
+            {/if}
+            {#if !sameAuthorAbove}
+                <span class="text-sm max-sm:text-xs" style="color: {hashToColor(reply.creator)}">
+                    {getUsername(reply.creator)}
+                </span>
+            {/if}
+        </div>
         {#if reply.files.length}
             {@const file = reply.files[0]}
             <button onclick={() => (selectedImage = getPostURLOG(file))} class="block h-full">
@@ -464,8 +473,12 @@
                                 Follow +
                             </button>
                         {/if}
-                        <span class="mr-1.5 h-6 bg-neutral-700 px-2 text-white">?</span>
-                        <span class="max-sm:text-2xl">Anonymous</span>
+                        <!-- <span class="mr-1.5 h-6 bg-neutral-700 px-2 text-white">?</span> -->
+                        <span
+                            class="max-sm:text-2xl"
+                            style="color: {hashToColor($thread.post.creator)}"
+                            >{getUsername($thread.post.creator)}</span
+                        >
                     </div>
                     <div class="w-full">
                         <span class="max-sm:text-2xl"

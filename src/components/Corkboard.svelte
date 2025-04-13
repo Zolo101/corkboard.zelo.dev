@@ -24,11 +24,11 @@
         BoardStage,
         searchText,
         creatingPostFormData
-    } from "../lib/index.svelte";
+    } from "$lib/index.svelte";
     import loadingURL from "$lib/assets/loading.gif";
     import dotsURL from "$lib/assets/dots.png";
     import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
-    import type { Post } from "../lib/index.svelte";
+    import type { Post } from "$lib/index.svelte";
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     import { scaleImage } from "$lib/client/clientUtils";
 

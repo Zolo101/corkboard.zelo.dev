@@ -7,7 +7,8 @@ import {
 import { Resource } from "sst";
 import { TwitterSnowflake } from "@sapphire/snowflake";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import type { Post, Thread } from "../../app";
+import type { Post, Thread } from "$lib/index.svelte";
+import { hashIP } from "./serverUtils";
 
 export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread> => {
     // const { Item } = await db.send(new GetItemCommand({
@@ -48,6 +49,7 @@ export const postPost = async (db: DynamoDBClient, ip: string, body: any, files:
             new PutItemCommand({
                 TableName: Resource.Posts.name,
                 Item: marshall({
+                    creator: hashIP(ip),
                     postId: "POST#" + postId,
                     replyId: "POST#" + postId,
                     title: body.get("title"),
@@ -84,6 +86,7 @@ export const postReply = async (
             new PutItemCommand({
                 TableName: Resource.Posts.name,
                 Item: marshall({
+                    creator: hashIP(ip),
                     postId: "POST#" + postId,
                     replyId: "REPLY#" + replyId,
                     content: body.get("content"),

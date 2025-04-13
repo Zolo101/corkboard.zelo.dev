@@ -13,6 +13,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "IPHashSalt": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "Media": {
       "name": string
       "type": "sst.aws.Bucket"

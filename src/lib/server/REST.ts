@@ -10,7 +10,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import type { Post, Thread } from "$lib/index.svelte";
 import { hashIP } from "./serverUtils";
 
-export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread> => {
+export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread | null> => {
     // const { Item } = await db.send(new GetItemCommand({
     //     TableName: Resource.Posts.name,
     //     Key: { postId: { S: postId } }
@@ -26,6 +26,11 @@ export const getPost = async (db: DynamoDBClient, postId: string): Promise<Threa
             }
         })
     );
+
+    // Found nothing...
+    if (Items?.length === 0) {
+        return null;
+    }
 
     const result = (Items ?? []).map((item) => unmarshall(item));
 

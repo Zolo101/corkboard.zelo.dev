@@ -97,12 +97,10 @@
             console.error("WebSocket error:", error);
         };
 
-        follows = new SvelteMap(
-            Object.entries(JSON.parse(localStorage.getItem("follows") || "{}"))
-        );
+        pins = new SvelteMap(Object.entries(JSON.parse(localStorage.getItem("pins") || "{}")));
 
         $effect(() => {
-            localStorage.setItem("follows", JSON.stringify(Object.fromEntries(follows)));
+            localStorage.setItem("pins", JSON.stringify(Object.fromEntries(pins)));
         });
     });
 
@@ -141,6 +139,10 @@
             $thread = await result.json();
             $creatingReply = false;
             $loading = false;
+
+            if (settings.pinOnReply) {
+                pinPost($thread.post.postId);
+            }
         }).catch((err) => {
             console.error(err);
             alert(`Error... DM Zelo101 with a screenshot of the error:\n\n${err.message}`);
@@ -190,18 +192,18 @@
 
     let selectedImage = $state<string | null>(null);
 
-    let follows = $state(new SvelteMap<string, number>());
+    let pins = $state(new SvelteMap<string, number>());
 
-    const followPost = (postId: string) => {
-        follows.set(postId, Date.now());
+    const pinPost = (postId: string) => {
+        pins.set(postId, Date.now());
     };
 
-    const isFollowing = (postId: string) => {
-        return follows.has(postId);
+    const isPinned = (postId: string) => {
+        return pins.has(postId);
     };
 
-    const unfollowPost = (postId: string) => {
-        follows.delete(postId);
+    const unpinPost = (postId: string) => {
+        pins.delete(postId);
     };
 
     const getUsername = (creator: string) => (creator ? "Anonymous" : "Unknown");
@@ -286,17 +288,17 @@
     </div>
 {/snippet}
 
-{#snippet follow(postId: string)}
-    <!-- TODO: This will fail if posts gets deleted while followed -->
+{#snippet pin(postId: string)}
+    <!-- TODO: This will fail if posts gets deleted while pinned -->
     {@const post = $posts.find((p) => p.postId === postId)}
-    <button class="ring-2 ring-black" onclick={() => ($id = postId.slice(5))}>
+    <button onclick={() => ($id = postId.slice(5))}>
         <img
             src={getPostURL200(post!.files[0])}
             alt={post!.title}
             title={post!.title}
-            class="h-16 w-16"
-            width="64"
-            height="64"
+            class="h-24 w-24 rounded object-cover ring-2 ring-black"
+            width="96"
+            height="96"
         />
     </button>
 {/snippet}
@@ -318,7 +320,7 @@
 </a>
 <main class="mx-5 flex justify-center gap-5 max-lg:flex-col">
     <section class="top-5 mb-5 flex h-fit grow flex-col items-center gap-2 lg:sticky">
-        <Corkboard {follows} />
+        <Corkboard {pins} />
         <div id="menu" class="flex w-1/2 justify-center gap-3">
             <button
                 class="cb-input bg-green-400 text-5xl ring-green-500 hover:bg-green-500"
@@ -416,18 +418,18 @@
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
                 <div>
                     <h1 class="text-4xl">General</h1>
-                    {@render settingsOption("Follow on reply", "followOnReply")}
+                    {@render settingsOption("Pin on reply", "pinOnReply")}
                     <br />
-                    <h2 class="text-2xl">Following</h2>
-                    <div class="flex gap-2">
-                        {#if follows}
-                            {#each follows.keys() as ids}
-                                {@render follow(ids)}
+                    <h2 class="text-2xl">Pinned</h2>
+                    <div class="flex flex-wrap gap-2">
+                        {#if pins}
+                            {#each pins.keys() as ids}
+                                {@render pin(ids)}
                             {/each}
                         {/if}
                     </div>
                     <br />
-                    <!-- <p class="text-sm text-zinc-900">Click to unfollow</p> -->
+                    <!-- <p class="text-sm text-zinc-900">Click to unpin</p> -->
                     <!-- <h2 class="text-2xl">Themes</h2>
                     <div class="flex gap-2">
                         {#each ["Green", "Blue", "Red", "Purple", "Classic"] as item}
@@ -458,19 +460,19 @@
             <div>
                 <div class="flex justify-between">
                     <div class="flex w-full">
-                        {#if isFollowing($thread.post.postId)}
+                        {#if isPinned($thread.post.postId)}
                             <button
-                                onclick={() => unfollowPost($thread.post.postId)}
+                                onclick={() => unpinPost($thread.post.postId)}
                                 class="mr-1.5 h-6 bg-emerald-700 px-2 text-white"
                             >
-                                Unfollow +
+                                Unpin +
                             </button>
                         {:else}
                             <button
-                                onclick={() => followPost($thread.post.postId)}
+                                onclick={() => pinPost($thread.post.postId)}
                                 class="mr-1.5 h-6 bg-emerald-600 px-2 text-white"
                             >
-                                Follow +
+                                Pin +
                             </button>
                         {/if}
                         <!-- <span class="mr-1.5 h-6 bg-neutral-700 px-2 text-white">?</span> -->

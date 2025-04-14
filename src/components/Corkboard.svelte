@@ -32,7 +32,7 @@
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     import { scaleImage } from "$lib/client/clientUtils";
 
-    const { follows } = $props();
+    const { pins } = $props();
 
     const getPostURL = (id: string) =>
         `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
@@ -131,10 +131,10 @@
             thickness: 2,
             color: 0x000000
         });
-        const followingOutline = new OutlineFilter({
+        const pinnedOutline = new OutlineFilter({
             thickness: 3,
-            color: 0x00cccc,
-            alpha: 0.5
+            color: 0x00ffff,
+            alpha: 0.75
         });
         const goodBoundingBox = new OutlineFilter({
             thickness: 3,
@@ -240,10 +240,10 @@
             }
         };
 
-        // TODO: Rename, this does more than following...
-        const addFollowingFilter = (postSprite: Sprite, post: Post) => {
-            if (follows.get(post.postId)) {
-                postSprite.filters = [...(postSprite.filters as Filter[]), followingOutline];
+        // TODO: Rename, this does more than pinning...
+        const addPinnedFilter = (postSprite: Sprite, post: Post) => {
+            if (pins.get(post.postId)) {
+                postSprite.filters = [...(postSprite.filters as Filter[]), pinnedOutline];
                 postSprite.zIndex = Number.POSITIVE_INFINITY;
             }
         };
@@ -290,7 +290,7 @@
                 // Search: Check if the post is being filtered
                 if (postSprite.alpha !== searchAlpha) {
                     postSprite.filters = [contrast, pixelate, currentPostOutline];
-                    addFollowingFilter(postSprite, post);
+                    addPinnedFilter(postSprite, post);
                     // contrast.contrast(0.5, true);
                     hoverText.text = post.title;
 
@@ -302,13 +302,13 @@
                 if (selectedPostSprite !== postSprite) postSprite.filters = [contrast, pixelate];
                 contrast.contrast(0.5, false);
                 hoverText.text = defaultHoverText;
-                addFollowingFilter(postSprite, post);
+                addPinnedFilter(postSprite, post);
 
                 if (corkDOM) corkDOM.style.cursor = "initial";
             });
 
             postSprite.filters = [contrast, pixelate];
-            addFollowingFilter(postSprite, post);
+            addPinnedFilter(postSprite, post);
 
             // $id = post.postId;
             // $loading = false;

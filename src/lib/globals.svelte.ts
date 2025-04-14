@@ -1,13 +1,13 @@
 import { browser } from "$app/environment";
 
 type Settings = {
-    followOnReply: boolean;
+    pinOnReply: boolean;
     normalFont: boolean;
     screenReader: boolean;
 };
 
 export const settings: Settings = $state({
-    followOnReply: false,
+    pinOnReply: false,
     normalFont: false,
     screenReader: false
 });

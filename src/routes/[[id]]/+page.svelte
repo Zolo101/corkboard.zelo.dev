@@ -10,6 +10,7 @@
         boardStage,
         creatingPostImageBlob,
         creatingPostTitleText,
+        creatingPostDescriptionText,
         searchText,
         creatingPostFormData
     } from "$lib/index.svelte";
@@ -35,6 +36,7 @@
     $posts = data.board;
 
     let settingsPage = $state(false);
+    let alertMessage = $state("");
 
     onMount(() => {
         $effect(() => {
@@ -126,7 +128,6 @@
         }
 
         formData.append("postId", $id);
-        // formData.append("creator", "4jfbbn1krnrsspo")
 
         const call = fetch("/api/reply", {
             method: "POST",
@@ -135,13 +136,19 @@
 
         $loading = true;
         call.then(async (result) => {
-            replyForm.reset();
-            $thread = await result.json();
             $creatingReply = false;
             $loading = false;
+            if (result.ok) {
+                $thread = await result.json();
+                replyForm.reset();
 
-            if (settings.pinOnReply) {
-                pinPost($thread.post.postId);
+                // Apparently a 500 isn't an error lol
+                if (settings.pinOnReply) {
+                    pinPost($thread.post.postId);
+                }
+            } else {
+                const { message } = await result.json();
+                alertMessage = message;
             }
         }).catch((err) => {
             console.error(err);
@@ -150,8 +157,6 @@
     };
 
     const createPost = () => {
-        $creatingPostFormData.set("creator", "4jfbbn1krnrsspo"); // Anonymous
-
         const formData = $creatingPostFormData;
         console.log($creatingPostFormData.get("x"), $creatingPostFormData.get("y"));
         const call = fetch("/api/post", {
@@ -161,15 +166,22 @@
 
         $loading = true;
         call.then(async (result) => {
-            const postId = await result.json();
+            $loading = false;
             $boardStage = BoardStage.Placed;
 
-            // removing these two because the resizer does not resize in time for the image to be shown
-            // so instead im doing this at the createPostSprite function in Corkboard.svelte
-            $loading = false;
-            $id = postId;
+            if (result.ok) {
+                const postId = await result.json();
 
-            // await refresh();
+                // removing these two because the resizer does not resize in time for the image to be shown
+                // so instead im doing this at the createPostSprite function in Corkboard.svelte
+                $id = postId;
+
+                $creatingPostTitleText = "";
+                $creatingPostDescriptionText = "";
+            } else {
+                const { message } = await result.json();
+                alertMessage = message;
+            }
         }).catch((err) => {
             console.error(err);
             alert(`Error... DM Zelo101 with a screenshot of the error:\n\n${err.message}`);
@@ -374,7 +386,7 @@
                         placeholder="Title"
                         maxlength="128"
                         class="rounded bg-white px-2 py-1 text-4xl dark:bg-neutral-700 dark:text-neutral-100"
-                        oninput={(s) => ($creatingPostTitleText = s.target.value.trim())}
+                        bind:value={$creatingPostTitleText}
                         required
                     />
                     <textarea
@@ -383,6 +395,7 @@
                         maxlength="4096"
                         required
                         class="rounded bg-white px-2 py-1 dark:bg-neutral-700 dark:text-neutral-100"
+                        bind:value={$creatingPostDescriptionText}
                     ></textarea>
                     <div class="flex justify-center gap-4">
                         <input
@@ -413,7 +426,7 @@
                 onclick={createPost}
             />
         {/if}
-        {#if !settingsPage}
+        {#if settingsPage}
             <!-- TODO: Create a settings component? -->
             <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
                 <div>
@@ -550,6 +563,32 @@
         >
             🗙
         </button>
+    </dialog>
+{/if}
+{#if alertMessage}
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+    <dialog
+        open
+        transition:fade={{ duration: 200 }}
+        class="fixed inset-0 z-50 h-screen w-screen bg-black/50"
+    >
+        <!-- TODO: Allow users to upload alt text with images -->
+        <div class="fixed inset-0 flex items-center justify-center">
+            <div class="rounded-lg bg-black p-4">
+                <h1 class="text-4xl text-white">Alert</h1>
+                <p class="p-8 text-xl text-red-500">{alertMessage}</p>
+                <button
+                    onclick={() => (alertMessage = "")}
+                    class="w-full text-xl text-blue-500 underline hover:text-neutral-300"
+                >
+                    Okay...
+                </button>
+            </div>
+        </div>
     </dialog>
 {/if}
 

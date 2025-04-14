@@ -16,25 +16,29 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
         const files = Array.isArray(formFiles) ? formFiles : [formFiles];
 
         // string cheese
-        const stringKeys = await uploadFiles(s3, files as File[])
-            .then((results) => results.map((result) => result.Key))
-            .catch((error) => {
-                console.error(error);
-                return [];
-            });
+        try {
+            const stringKeys = (await uploadFiles(s3, files as File[])).map((result) => result.Key);
 
-        if (stringKeys.length === 0) {
-            return error(500, "Failed to upload files");
-        }
+            if (stringKeys.length === 0) {
+                return error(500, "Failed to upload files");
+            }
 
-        // Used for anonymous seperation
-        const ip = getClientAddress();
-        const postId = await postPost(db, ip, body, stringKeys as string[]);
+            // Used for anonymous seperation
+            const ip = getClientAddress();
+            const postId = await postPost(db, ip, body, stringKeys as string[]);
 
-        if (postId) {
-            return json(postId);
-        } else {
-            return error(500, "Failed to post");
+            if (postId) {
+                return json(postId);
+            } else {
+                return error(500, "Failed to post");
+            }
+        } catch (e: unknown) {
+            if (e instanceof Error && e.message.includes("Content Moderated")) {
+                return error(
+                    403,
+                    "This image was moderated, please try again with a different image."
+                );
+            }
         }
     } else {
         return error(400, "No files found");

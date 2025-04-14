@@ -1,4 +1,4 @@
-import { error, json, type RequestHandler, text } from "@sveltejs/kit";
+import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { getPost, postReply } from "$lib/server/REST";
 import { uploadFiles } from "$lib/server/S3";
 
@@ -18,7 +18,16 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
         // Yeah, sometimes the file is empty
         if (file.size !== 0) {
             // string cheese
-            [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[]);
+            try {
+                [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[]);
+            } catch (e: unknown) {
+                if (e instanceof Error && e.message.includes("Content Moderated")) {
+                    return error(
+                        403,
+                        "This image was moderated, please try again with a different image."
+                    );
+                }
+            }
 
             if (FileKey === undefined) {
                 return new Response("Failed to upload file", { status: 500 });

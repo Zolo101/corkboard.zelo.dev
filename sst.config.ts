@@ -95,7 +95,13 @@ export default $config({
 
         // Frontend
         new sst.aws.SvelteKit("Site", {
-            link: [media, posts, IPHashSalt]
+            link: [media, posts, IPHashSalt],
+            permissions: [
+                {
+                    actions: ["rekognition:DetectModerationLabels"],
+                    resources: ["*"]
+                }
+            ]
         });
     }
 });

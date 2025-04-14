@@ -38,6 +38,7 @@ export const searchText = writable("");
 export const boardStage = writable(BoardStage.None);
 export const creatingPostFormData = writable<FormData>();
 export const creatingPostTitleText = writable("");
+export const creatingPostDescriptionText = writable("");
 export const creatingPostImageBlob = writable<File>();
 export const creatingReply = writable(false);
 export const thread = writable<Thread | undefined>();

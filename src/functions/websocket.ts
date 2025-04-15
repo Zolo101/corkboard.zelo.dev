@@ -1,32 +1,33 @@
-import { DeleteItemCommand, DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DeleteCommand, DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst";
 
-export const addConnection = async (db: DynamoDBClient, id: string) => {
+export const addConnection = async (db: DynamoDBDocumentClient, id: string) => {
     console.log("New Connection:", id);
     return db.send(
-        new PutItemCommand({
+        new PutCommand({
             TableName: Resource.Connections.name,
             Item: {
-                connectionId: { S: id }
+                connectionId: id
             }
         })
     );
 };
 
-export const removeConnection = async (db: DynamoDBClient, id: string) => {
+export const removeConnection = async (db: DynamoDBDocumentClient, id: string) => {
     console.log("Disconnected:", id);
     return db.send(
-        new DeleteItemCommand({
+        new DeleteCommand({
             TableName: Resource.Connections.name,
             Key: {
-                connectionId: { S: id }
+                connectionId: id
             }
         })
     );
 };
 
 export const connect = async (event: any) => {
-    const db = new DynamoDBClient();
+    const db = DynamoDBDocumentClient.from(new DynamoDBClient());
     await addConnection(db, event.requestContext.connectionId);
     return { statusCode: 200 };
 };

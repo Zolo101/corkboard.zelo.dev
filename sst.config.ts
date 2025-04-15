@@ -56,7 +56,8 @@ export default $config({
         const posts = new sst.aws.Dynamo("Posts", {
             fields: {
                 postId: "string",
-                replyId: "string"
+                replyId: "string",
+                postType: "string" // "post" or "reply"
                 // creatorId: "string",
                 // files: "string[]",
                 // content: "string",
@@ -64,6 +65,12 @@ export default $config({
                 // updatedAt: "string",
             },
             primaryIndex: { hashKey: "postId", rangeKey: "replyId" },
+            globalIndexes: {
+                postTypeIndex: {
+                    hashKey: "postType",
+                    rangeKey: "postId"
+                }
+            },
             stream: "new-image"
         });
 
@@ -75,13 +82,26 @@ export default $config({
             primaryIndex: { hashKey: "connectionId" }
         });
 
+        // Rate limiting table
+        const rateLimits = new sst.aws.Dynamo("RateLimits", {
+            fields: {
+                key: "string",
+                timestamp: "number"
+                // count: "number"
+            },
+            primaryIndex: { hashKey: "key", rangeKey: "timestamp" },
+            ttl: "timestamp"
+        });
+
         // WebSocket for Realtime Post & Reply creation
         const postsWebsocket = new sst.aws.ApiGatewayWebSocket("PostWebSocket");
         postsWebsocket.route("$connect", {
+            // runtime: "go",
             handler: "src/functions/websocket.connect",
             link: [connections]
         });
         postsWebsocket.route("$disconnect", {
+            // runtime: "go",
             handler: "src/functions/websocket.disconnect",
             link: [connections]
         });
@@ -95,7 +115,7 @@ export default $config({
 
         // Frontend
         new sst.aws.SvelteKit("Site", {
-            link: [media, posts, IPHashSalt],
+            link: [rateLimits, media, posts, IPHashSalt],
             permissions: [
                 {
                     actions: ["rekognition:DetectModerationLabels"],

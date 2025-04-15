@@ -1,28 +1,20 @@
-import {
-    type DynamoDBClient,
-    PutItemCommand,
-    QueryCommand,
-    ScanCommand
-} from "@aws-sdk/client-dynamodb";
+import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst";
 import { TwitterSnowflake } from "@sapphire/snowflake";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import type { Post, Thread } from "$lib/index.svelte";
+import type { Post, Reply, Thread } from "$lib/index.svelte";
 import { hashIP } from "./serverUtils";
 
-export const getPost = async (db: DynamoDBClient, postId: string): Promise<Thread | null> => {
-    // const { Item } = await db.send(new GetItemCommand({
-    //     TableName: Resource.Posts.name,
-    //     Key: { postId: { S: postId } }
-    // }));
-
-    // TODO: Get replies as well
+export const getPost = async (
+    db: DynamoDBDocumentClient,
+    postId: string
+): Promise<Thread | null> => {
     const { Items } = await db.send(
         new QueryCommand({
             TableName: Resource.Posts.name,
             KeyConditionExpression: "postId = :postId",
             ExpressionAttributeValues: {
-                ":postId": { S: "POST#" + postId }
+                ":postId": "POST#" + postId
             }
         })
     );
@@ -32,31 +24,32 @@ export const getPost = async (db: DynamoDBClient, postId: string): Promise<Threa
         return null;
     }
 
-    const result = (Items ?? []).map((item) => unmarshall(item));
-
-    // find the post
-    // const post = take(result as (Post | Reply)[], (item) => item.postId === item.replyId);
-
-    // TODO: The .filter is annoying but I doubt it's that slow... right?
+    const [post, ...replies] = Items!;
     return {
-        post: result.find((item) => item.postId === item.replyId),
-        replies: result.filter((item) => item.postId !== item.replyId)
+        post: post as Post,
+        replies: replies as Reply[]
     };
 };
 
-export const postPost = async (db: DynamoDBClient, ip: string, body: any, files: string[]) => {
+export const postPost = async (
+    db: DynamoDBDocumentClient,
+    ip: string,
+    body: any,
+    files: string[]
+) => {
     // console.log(body)
     // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html
     const postId = TwitterSnowflake.generate().toString();
 
     return db
         .send(
-            new PutItemCommand({
+            new PutCommand({
                 TableName: Resource.Posts.name,
-                Item: marshall({
+                Item: {
                     creator: hashIP(ip),
                     postId: "POST#" + postId,
                     replyId: "POST#" + postId,
+                    postType: "post",
                     title: body.get("title"),
                     content: body.get("content"),
                     files: files,
@@ -64,7 +57,7 @@ export const postPost = async (db: DynamoDBClient, ip: string, body: any, files:
                     y: body.get("y"),
                     created: new Date().toISOString(),
                     updated: new Date().toISOString()
-                })
+                }
             })
         )
         .then(() => postId)
@@ -75,7 +68,7 @@ export const postPost = async (db: DynamoDBClient, ip: string, body: any, files:
 };
 
 export const postReply = async (
-    db: DynamoDBClient,
+    db: DynamoDBDocumentClient,
     ip: string,
     postId: string,
     body: any,
@@ -88,18 +81,19 @@ export const postReply = async (
     // Create a new reply
     return db
         .send(
-            new PutItemCommand({
+            new PutCommand({
                 TableName: Resource.Posts.name,
-                Item: marshall({
+                Item: {
                     creator: hashIP(ip),
                     postId: "POST#" + postId,
                     replyId: "REPLY#" + replyId,
+                    postType: "reply",
                     content: body.get("content"),
                     // Empty file array if fileKey is falsy (null)
                     files: fileKey ? [fileKey] : [],
                     created: new Date().toISOString(),
                     updated: new Date().toISOString()
-                })
+                }
             })
         )
         .then(() => postId)
@@ -109,25 +103,61 @@ export const postReply = async (
         });
 };
 
-export const getBoard = async (db: DynamoDBClient) => {
+// export const getBoard = async (db: DynamoDBClient) => {
+//     const scanCommand = new ScanCommand({
+//         TableName: Resource.Posts.name
+//     });
+//     const scanResponse = await db.send(scanCommand);
+//     const items = scanResponse.Items!;
+
+//     // Process each item
+//     for (const item of items) {
+//         const unmarshalledItem = unmarshall(item);
+//         const postId = unmarshalledItem.postId;
+//         const replyId = unmarshalledItem.replyId;
+
+//         // Determine item type based on postId and replyId patterns
+//         let itemType = "reply";
+//         if (postId === replyId) {
+//             itemType = "post";
+//         }
+
+//         // Update the item to add the itemType attribute
+//         const updateParams = {
+//             TableName: Resource.Posts.name,
+//             Key: {
+//                 postId: { S: postId },
+//                 replyId: { S: replyId }
+//             },
+//             UpdateExpression: "SET postType = :postType",
+//             ExpressionAttributeValues: {
+//                 ":postType": { S: itemType }
+//             }
+//         };
+
+//         const updateCommand = new UpdateItemCommand(updateParams);
+//         await db.send(updateCommand);
+//         console.log(`Updated item ${postId}:${replyId} with itemType: ${itemType}`);
+//     }
+// };
+
+export const getBoard = async (db: DynamoDBDocumentClient) => {
+    // old way
+    // const { Items } = await db.send(
+    //     new ScanCommand({
+    //         TableName: Resource.Posts.name
+    //     })
+    // );
+
     const { Items } = await db.send(
-        new ScanCommand({
-            TableName: Resource.Posts.name
+        new QueryCommand({
+            TableName: Resource.Posts.name,
+            IndexName: "postTypeIndex",
+            KeyConditionExpression: "postType = :postType",
+            ExpressionAttributeValues: {
+                ":postType": "post"
+            }
         })
     );
-
-    // does not work
-    // const { Items } = await db.send(new QueryCommand({
-    //     TableName: Resource.Posts.name,
-    //     KeyConditionExpression: "begins_with(replyId, :post)",
-    //     ExpressionAttributeValues: {
-    //         ":post": {S: "POST#"}
-    //     }
-    // }));
-
-    // unmarshall gets rid of the ugly S, N, etc.
-    // TODO: Is there a way to NOT filter this?? :sob:
-    return Items!
-        .map((item) => unmarshall(item))
-        .filter((item) => item.replyId.startsWith("POST#")) as Post[];
+    return Items;
 };

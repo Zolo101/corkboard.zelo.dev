@@ -30,6 +30,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "RateLimits": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "Site": {
       "type": "sst.aws.SvelteKit"
       "url": string

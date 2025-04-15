@@ -3,27 +3,27 @@ import {
     PostToConnectionCommand
 } from "@aws-sdk/client-apigatewaymanagementapi";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { Resource } from "sst";
 import { removeConnection } from "./websocket";
-import { unmarshallArray } from "./serverUtils";
+import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 // no broadcast method :(
-const getAllConnections = async (db: DynamoDBClient) => {
+const getAllConnections = async (db: DynamoDBDocumentClient) => {
     const { Items } = await db.send(
         new ScanCommand({
             TableName: Resource.Connections.name
         })
     );
 
-    return unmarshallArray(Items ?? []);
+    return Items ?? [];
 };
 
 export const postHandler = async (event: any) => {
     const client = new ApiGatewayManagementApiClient({
         endpoint: Resource.PostWebSocket.managementEndpoint
     });
-    const db = new DynamoDBClient();
+    const db = DynamoDBDocumentClient.from(new DynamoDBClient());
 
     const { Records } = event;
     const newPosts: string[] = [];
@@ -43,7 +43,6 @@ export const postHandler = async (event: any) => {
     const connections = await getAllConnections(db);
     const postCalls = connections.map(async (connection) => {
         try {
-            console.log(connection);
             await client.send(
                 new PostToConnectionCommand({
                     ConnectionId: connection.connectionId,

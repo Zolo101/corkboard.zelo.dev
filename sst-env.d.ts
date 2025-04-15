@@ -21,10 +21,6 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
-    "Notifications": {
-      "arn": string
-      "type": "sst.aws.SnsTopic"
-    }
     "PostWebSocket": {
       "managementEndpoint": string
       "type": "sst.aws.ApiGatewayWebSocket"

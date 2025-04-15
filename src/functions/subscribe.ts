@@ -1,6 +1,5 @@
 import {
     ApiGatewayManagementApiClient,
-    GetConnectionCommand,
     PostToConnectionCommand
 } from "@aws-sdk/client-apigatewaymanagementapi";
 import { unmarshall } from "@aws-sdk/util-dynamodb";

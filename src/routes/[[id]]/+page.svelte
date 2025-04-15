@@ -343,7 +343,7 @@
                 type="text"
                 name="search"
                 placeholder="Search"
-                class="cb-mask cb-border flex h-16 grow items-center justify-center rounded bg-white p-4 text-3xl ring-2 ring-neutral-800 dark:bg-neutral-700 dark:text-gray-300"
+                class="cb-mask cb-border max-w-1/2 flex h-16 grow items-center justify-center rounded bg-white p-4 text-3xl ring-2 ring-neutral-800 dark:bg-neutral-700 dark:text-gray-300"
                 oninput={(s) => ($searchText = s.target.value.trim())}
             />
             <button

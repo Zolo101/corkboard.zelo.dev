@@ -4,7 +4,7 @@
     let loaded = $state(false);
     let retryCount = $state(0);
 
-    const maxAttempts = 5;
+    const maxAttempts = 10;
     const delay = 200; // milliseconds
 
     const onload = () => {
@@ -22,7 +22,7 @@
             }, delay * retryCount);
         } else {
             // TODO: Show error image
-            console.error(`ERROR: Failed to load ${src} after 5 attempts`);
+            console.error(`ERROR: Failed to load ${src} after ${maxAttempts} attempts`);
         }
     };
 </script>

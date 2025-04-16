@@ -172,8 +172,6 @@
             if (result.ok) {
                 const postId = await result.json();
 
-                // removing these two because the resizer does not resize in time for the image to be shown
-                // so instead im doing this at the createPostSprite function in Corkboard.svelte
                 $id = postId;
 
                 $creatingPostTitleText = "";
@@ -343,7 +341,8 @@
                 type="text"
                 name="search"
                 placeholder="Search"
-                class="cb-mask cb-border max-w-1/2 flex h-16 grow items-center justify-center rounded bg-white p-4 text-3xl ring-2 ring-neutral-800 dark:bg-neutral-700 dark:text-gray-300"
+                disabled={$boardStage !== BoardStage.None}
+                class="cb-mask cb-border max-w-1/2 flex h-16 grow items-center justify-center rounded bg-white p-4 text-3xl ring-2 ring-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-700 dark:text-gray-300"
                 oninput={(s) => ($searchText = s.target.value.trim())}
             />
             <button
@@ -550,9 +549,14 @@
     <style>
         body {
             overflow: hidden;
+            padding-right: 8px;
         }
     </style>
-    <dialog open class="fixed inset-0 z-50 h-screen w-screen bg-black/50">
+    <dialog
+        open
+        transition:fade={{ duration: 200 }}
+        class="fixed inset-0 z-50 h-screen w-screen bg-black/50"
+    >
         <!-- TODO: Allow users to upload alt text with images -->
         <div class="fixed inset-0 flex items-center justify-center">
             <img src={selectedImage} alt="" class="max-h-[90vh] max-w-[90vw]" />
@@ -569,6 +573,7 @@
     <style>
         body {
             overflow: hidden;
+            padding-right: 8px;
         }
     </style>
     <dialog

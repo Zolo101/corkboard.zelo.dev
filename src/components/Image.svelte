@@ -3,33 +3,61 @@
     const { src, alt } = $props();
     let loaded = $state(false);
     let retryCount = $state(0);
+    let img: HTMLImageElement | undefined = $state();
+    let currentSrc = $state(src);
 
     const maxAttempts = 10;
-    const delay = 200; // milliseconds
+    const initialDelay = 500; // Start with 500ms
+    const maxDelay = 5000; // Max 5 seconds between retries
 
-    const onload = () => {
-        loaded = true;
+    const loadImage = () => {
+        if (!src) return;
+
+        const newImg = new Image();
+        newImg.src = src;
+
+        newImg.onload = () => {
+            loaded = true;
+            img = newImg;
+            currentSrc = src;
+        };
+
+        newImg.onerror = () => {
+            if (retryCount < maxAttempts) {
+                // Exponential backoff with jitter
+                const delay = Math.min(initialDelay * Math.pow(2, retryCount), maxDelay);
+
+                setTimeout(() => {
+                    retryCount++;
+                    loadImage();
+                }, delay);
+            } else {
+                console.error(`Failed to load image after ${maxAttempts} attempts: ${src}`);
+                // You could set a fallback image here if desired
+            }
+        };
     };
 
-    const onerror = () => {
-        if (retryCount < maxAttempts) {
-            retryCount++;
-            setTimeout(() => {
-                const img = new Image();
-                img.src = src;
-                img.onload = onload;
-                img.onerror = onerror;
-            }, delay * retryCount);
-        } else {
-            // TODO: Show error image
-            console.error(`ERROR: Failed to load ${src} after ${maxAttempts} attempts`);
+    // TODO: Do we need both of these? Maybe merge them?
+    // Initial load
+    $effect(() => {
+        if (src) {
+            retryCount = 0;
+            loadImage();
         }
-    };
+    });
+
+    // Watch for src changes
+    $effect(() => {
+        if (src && src !== currentSrc) {
+            retryCount = 0;
+            loadImage();
+        }
+    });
 </script>
 
-{#if loaded}
-    <img {src} {alt} class="m-2" />
+{#if loaded && img}
+    <img src={currentSrc} {alt} bind:this={img} class="m-2" />
 {:else}
-    <img {src} {alt} {onload} {onerror} class="hidden" />
     <img src={loadingGIF} alt="Loading..." class="m-2 inline opacity-50 grayscale" />
 {/if}

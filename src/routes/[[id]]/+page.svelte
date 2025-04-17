@@ -134,6 +134,9 @@
             body: formData
         });
 
+        // @ts-ignore
+        window.umami.track("create_reply");
+
         $loading = true;
         call.then(async (result) => {
             $creatingReply = false;
@@ -163,6 +166,9 @@
             method: "POST",
             body: formData
         });
+
+        // @ts-ignore
+        window.umami.track("create_post");
 
         $loading = true;
         call.then(async (result) => {
@@ -474,6 +480,7 @@
                     <div class="flex w-full">
                         {#if isPinned($thread.post.postId)}
                             <button
+                                data-umami-event="unpin_post"
                                 onclick={() => unpinPost($thread.post.postId)}
                                 class="mr-1.5 h-6 bg-emerald-700 px-2 text-white"
                             >
@@ -481,6 +488,7 @@
                             </button>
                         {:else}
                             <button
+                                data-umami-event="pin_post"
                                 onclick={() => pinPost($thread.post.postId)}
                                 class="mr-1.5 h-6 bg-emerald-600 px-2 text-white"
                             >

@@ -284,6 +284,9 @@
             // if (post.id !== $id) {
             postSprite.on("pointerdown", (event) => {
                 selectSprite(post, postSprite);
+
+                // @ts-ignore
+                window.umami.track("select_post");
             });
 
             postSprite.on("pointerover", (event) => {

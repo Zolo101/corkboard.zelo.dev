@@ -3,7 +3,7 @@ import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { Resource } from "sst";
 
 interface RateLimitConfig {
-    windowMs: number; // Time window in milliseconds
+    windowSeconds: number; // Time window in seconds
     max: number; // Maximum number of requests allowed in the window
 }
 
@@ -18,8 +18,9 @@ export class RateLimiter {
         db: DynamoDBDocumentClient,
         key: string
     ): Promise<{ allowed: boolean; remaining: number }> {
-        const now = Date.now();
-        const windowStart = now - this.config.windowMs;
+        // DynamoDB unix time is in seconds so we gotta do this...
+        const now = Math.floor(Date.now() / 1000);
+        const windowStart = now - this.config.windowSeconds;
 
         // Query for requests in the current window
         const queryCommand = new QueryCommand({

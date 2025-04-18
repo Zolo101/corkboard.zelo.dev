@@ -6,7 +6,7 @@ import { RateLimiter } from "$lib/server/rateLimit";
 
 // Rate limit configuration
 const rateLimiter = new RateLimiter({
-    windowMs: 60 * 1000, // 1 minute
+    windowSeconds: 60, // 1 minute
     max: 30 // 30 requests per minute
 });
 

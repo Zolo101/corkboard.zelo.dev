@@ -20,7 +20,10 @@ export default $config({
                     name: "MediaResizer",
                     function: {
                         handler: "src/functions/onupload.resizer",
-                        link: [media]
+                        link: [media],
+                        nodejs: {
+                            install: ["sharp"]
+                        }
                     },
                     events: ["s3:ObjectCreated:*"],
                     filterPrefix: "og/"

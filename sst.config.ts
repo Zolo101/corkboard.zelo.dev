@@ -1,12 +1,12 @@
 /// <reference path="./.sst/platform/config.d.ts" />
-
 export default $config({
     app(input) {
         return {
             name: "corkboard",
             removal: input?.stage === "production" ? "retain" : "remove",
             protect: ["production"].includes(input?.stage),
-            home: "aws"
+            home: "aws",
+            providers: { cloudflare: "6.1.0" }
         };
     },
     async run() {
@@ -27,7 +27,6 @@ export default $config({
                 }
             ]
         });
-
         // CloudFront CDN
         new sst.aws.Router("CDN", {
             routes: {
@@ -43,7 +42,6 @@ export default $config({
                 }
             }
         });
-
         // Lambda
         // new sst.aws.Function("ThumbnailGenerate", {
         //     handler: "src/lambda/ThumbnailGenerate.handler",
@@ -51,7 +49,6 @@ export default $config({
         //     memory: "1024 MB",
         //     link: [media]
         // })
-
         // Corkboard Posts & Replies
         const posts = new sst.aws.Dynamo("Posts", {
             fields: {
@@ -73,7 +70,6 @@ export default $config({
             },
             stream: "new-image"
         });
-
         // Connection table for WebSocket
         const connections = new sst.aws.Dynamo("Connections", {
             fields: {
@@ -81,7 +77,6 @@ export default $config({
             },
             primaryIndex: { hashKey: "connectionId" }
         });
-
         // Rate limiting table
         const rateLimits = new sst.aws.Dynamo("RateLimits", {
             fields: {
@@ -92,7 +87,6 @@ export default $config({
             primaryIndex: { hashKey: "key", rangeKey: "timestamp" },
             ttl: "timestamp"
         });
-
         // WebSocket for Realtime Post & Reply creation
         const postsWebsocket = new sst.aws.ApiGatewayWebSocket("PostWebSocket");
         postsWebsocket.route("$connect", {
@@ -109,12 +103,14 @@ export default $config({
             handler: "src/functions/subscribe.postHandler",
             link: [connections, postsWebsocket]
         });
-
         // I think I'm going to just go with IP
         const IPHashSalt = new sst.Secret("IPHashSalt");
-
         // Frontend
         new sst.aws.SvelteKit("Site", {
+            domain: {
+                name: "corkboard.zelo.dev",
+                dns: sst.cloudflare.dns()
+            },
             link: [rateLimits, media, posts, IPHashSalt],
             permissions: [
                 {

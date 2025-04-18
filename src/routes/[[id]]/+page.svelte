@@ -134,6 +134,11 @@
             return;
         }
 
+        // The form still creates an empty file object if no file is selected
+        if ((formData.get("file") as File).size === 0) {
+            formData.delete("file");
+        }
+
         formData.append("postId", $id);
 
         const call = fetch("/api/reply", {

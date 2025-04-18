@@ -22,8 +22,14 @@ export const postSchema = z.object({
         .min(1, "Content is required")
         .max(2048, "Content must be less than 2048 characters"),
     file: fileSchema,
-    x: z.string().transform(Number),
-    y: z.string().transform(Number)
+    x: z
+        .string()
+        .transform(Number)
+        .pipe(z.number().min(0, "Outside board").max(640, "Outside board")),
+    y: z
+        .string()
+        .transform(Number)
+        .pipe(z.number().min(0, "Outside board").max(480, "Outside board"))
 });
 
 // Reply validation schema

@@ -49,6 +49,7 @@
         "@aws-sdk/util-dynamodb": "^3.788.0",
         "@pixi/gif": "^3.0.1",
         "@sapphire/snowflake": "^3.5.5",
+        "pixi-ease": "^3.0.7",
         "pixi-filters": "^6.0.6",
         "pixi.js": "^8.6.6",
         "sharp": "^0.33.5",

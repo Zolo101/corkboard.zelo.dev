@@ -31,6 +31,8 @@
     import type { Post } from "$lib/index.svelte";
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     import { scaleImage } from "$lib/client/clientUtils";
+    import * as pixiEase from "pixi-ease";
+    const ease = pixiEase.ease;
 
     const { pins } = $props();
 
@@ -51,7 +53,6 @@
         corkDOM.append(app.canvas);
 
         const currentPost: Post | undefined = $posts.find((post) => post.postId === $id);
-        const defaultHoverText = currentPost?.title || "Hover over a post to see its title!";
         await Assets.load(fontURL);
 
         let travelSpeed = $boardStage ? 0.25 : 1;
@@ -95,7 +96,7 @@
             tileScale: { x: 0.4, y: 0.4 }
         });
         const hoverText = new BitmapText({
-            text: defaultHoverText,
+            text: "Hover over a post to see its title!",
             style: {
                 fontFamily: "VCR OSD Mono",
                 fontSize: 12,
@@ -185,10 +186,10 @@
         loadingGIF.filters = [pixelate];
         previewImage.filters = [globalContrast, pixelate];
 
-        board.interactive = true;
-        board.addEventListener("pointermove", (event) => {
-            if (event.global.y < 150) {
-                hoverText.position.set(20, 510 - hoverText.height);
+        app.stage.interactive = true;
+        app.stage.addEventListener("pointermove", (event) => {
+            if (event.global.y < 150 / scale) {
+                hoverText.position.set(20, 480 - hoverText.height);
                 hoverText.anchor.set(0, 1);
             } else {
                 hoverText.position.set(20, 20);
@@ -304,7 +305,7 @@
             postSprite.on("pointerout", (event) => {
                 if (selectedPostSprite !== postSprite) postSprite.filters = [contrast, pixelate];
                 contrast.contrast(0.5, false);
-                hoverText.text = defaultHoverText;
+                hoverText.text = "";
                 addPinnedFilter(postSprite, post);
 
                 if (corkDOM) corkDOM.style.cursor = "initial";
@@ -482,7 +483,8 @@
             // TODO: Full text search using the api (like in 5beam)
             for (const [post, sprite] of postMap) {
                 const match = post.title.includes(text);
-                sprite.alpha = match ? 1 : searchAlpha;
+                ease.add(sprite, { alpha: match ? 1 : searchAlpha }, { duration: 100 });
+                // sprite.alpha = match ? 1 : searchAlpha;
                 if (match) {
                     found += 1;
                     lastFoundPost = post;
@@ -500,7 +502,7 @@
                 selectedPostSprite = postMap.get(lastFoundPost!)!;
                 selectSprite(lastFoundPost!, lastFoundSprite!);
             } else {
-                hoverText.text = found ? `Found ${found} results` : "No results found";
+                hoverText.text = found ? `${found} results` : "No results...";
             }
             // if (!one) $boardStage = BoardStage.SearchingNoResults
             // }

@@ -1,50 +1,43 @@
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { getPost, postReply } from "$lib/server/REST";
 import { uploadFiles } from "$lib/server/S3";
+import { replySchema } from "$lib/server/validation";
+import { ZodError } from "zod";
+import { handleError } from "$lib/server/serverUtils";
 
 export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getClientAddress }) => {
-    // TODO: Dirty!
     const body = await request.formData();
 
-    if (!body.has("postId")) {
-        return new Response("No postId found", { status: 400 });
-    }
+    try {
+        // Convert FormData to object for validation
+        const formData = {
+            postId: body.get("postId"),
+            content: body.get("content"),
+            files: body.has("files") ? [body.get("files")] : undefined
+        };
 
-    let FileKey: string | undefined = undefined;
-    if (body.has("files")) {
-        // Upload image first
-        const file = body.get("files") as File;
+        // Validate the form data
+        const validatedData = replySchema.parse(formData);
 
-        // Yeah, sometimes the file is empty
-        if (file.size !== 0) {
-            // string cheese
-            try {
-                [{ Key: FileKey }] = await uploadFiles(s3, [file] as File[]);
-            } catch (e: unknown) {
-                if (e instanceof Error && e.message.includes("Content Moderated")) {
-                    return error(
-                        403,
-                        "This image was moderated, please try again with a different image."
-                    );
-                }
-            }
+        let FileKey: string | undefined = undefined;
+        if (validatedData.files && validatedData.files.length > 0) {
+            [{ Key: FileKey }] = await uploadFiles(s3, validatedData.files);
 
             if (FileKey === undefined) {
-                return new Response("Failed to upload file", { status: 500 });
+                return error(500, "Failed to upload file");
             }
         }
-    }
 
-    // Used for anonymous seperation
-    const ip = getClientAddress();
-    const postId = body.get("postId") as string;
-    const replyId = await postReply(db, ip, postId, body, FileKey);
+        // Used for anonymous separation
+        const ip = getClientAddress();
+        const replyId = await postReply(db, ip, validatedData.postId, body, FileKey);
 
-    if (replyId) {
-        // TODO: Is there a better way to return?
-        // All good! Let's return the whole post so it refreshes
-        return json(await getPost(db, postId));
-    } else {
-        return new Response("Failed to reply", { status: 500 });
+        if (replyId) {
+            return json(await getPost(db, validatedData.postId));
+        } else {
+            return error(500, "Failed to reply");
+        }
+    } catch (e) {
+        return handleError(e);
     }
 };

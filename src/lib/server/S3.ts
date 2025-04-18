@@ -44,7 +44,9 @@ export const uploadFiles = async (s3: S3Client, files: File[]) => {
                 }
 
                 if (analysis.some((label) => NSFW.includes(label.Name!))) {
-                    throw new Error("Content Moderated");
+                    throw new Error(
+                        "This image was moderated, please try again with a different image."
+                    );
                 }
             }
 

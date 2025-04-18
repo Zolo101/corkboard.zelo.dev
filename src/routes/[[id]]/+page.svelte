@@ -160,7 +160,7 @@
                     pinPost($thread.post.postId);
                 }
             } else {
-                const { message } = await result.json();
+                let { message } = await result.json();
                 alertMessage = message;
             }
         }).catch((err) => {
@@ -195,7 +195,7 @@
                 $creatingPostTitleText = "";
                 $creatingPostDescriptionText = "";
             } else {
-                const { message } = await result.json();
+                let { message } = await result.json();
                 alertMessage = message;
             }
         }).catch((err) => {
@@ -413,7 +413,9 @@
                         required
                         class="rounded bg-white px-2 py-1 dark:bg-neutral-700 dark:text-neutral-100"
                         bind:value={$creatingPostDescriptionText}
-                    ></textarea>
+                    >
+                        <p>{$creatingPostDescriptionText.length}</p>
+                    </textarea>
                     <div class="flex justify-center gap-4">
                         <input
                             type="file"
@@ -425,6 +427,7 @@
                             required={false}
                         />
                     </div>
+                    <span class="px-1 text-right text-xs text-zinc-200">File limits are 3MB</span>
                     <input
                         type="submit"
                         value="Post!"
@@ -546,7 +549,7 @@
                 <div class="mt-2 flex flex-col rounded bg-white p-0.5 dark:bg-neutral-500">
                     <textarea
                         name="content"
-                        maxlength="4096"
+                        maxlength="2048"
                         placeholder="↵ to Send, Shift + ↵ for new line"
                         class="m-1 bg-white p-1 text-xl dark:bg-neutral-600 dark:text-neutral-100"
                         onkeydown={enterSubmit}
@@ -560,6 +563,7 @@
                             class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
                         />
                     </div>
+                    <span class="px-1 text-right text-xs text-zinc-200">File limits are 3MB</span>
                 </div>
             </form>
         </aside>

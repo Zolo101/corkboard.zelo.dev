@@ -52,8 +52,9 @@
         "pixi-filters": "^6.0.6",
         "pixi.js": "^8.6.6",
         "sharp": "^0.33.5",
-        "sst": "3.13.10",
-        "svelte-kit-sst": "2.43.5"
+        "sst": "3.13.14",
+        "svelte-kit-sst": "2.43.5",
+        "zod": "^3.24.3"
     },
     "pnpm": {
         "onlyBuiltDependencies": [

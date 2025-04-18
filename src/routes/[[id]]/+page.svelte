@@ -16,7 +16,7 @@
     } from "$lib/index.svelte";
     import type { Post, Reply } from "$lib/index.svelte";
     import { onMount } from "svelte";
-    import { createdDateFormatter, hashToColor } from "$lib/client/clientUtils";
+    import { CDN_URL, createdDateFormatter, hashToColor, WS_URL } from "$lib/client/clientUtils";
     import { pushState } from "$app/navigation";
     import Logo from "$lib/assets/logo.png";
     import CreateIcon from "$lib/assets/create_icon.png";
@@ -71,9 +71,7 @@
         const refresh = async () => posts.set(await (await fetch("/api/board")).json());
 
         // Gives us updates on new posts & replies.
-        const updateWebSocket = new WebSocket(
-            "wss://f59d4c8ub7.execute-api.eu-west-2.amazonaws.com/$default"
-        );
+        const updateWebSocket = new WebSocket(WS_URL);
         let dead = false;
         updateWebSocket.onopen = () => {
             console.log("Connected to WebSocket API");
@@ -219,9 +217,8 @@
         // ignore when PostStage.Placing
     };
 
-    const getPostURL200 = (id: string) =>
-        `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
-    const getPostURLOG = (id: string) => `https://drzkh14a10zed.cloudfront.net/${id}`;
+    const getPostURL200 = (id: string) => `${CDN_URL}/200/${id.substring(3)}`;
+    const getPostURLOG = (id: string) => `${CDN_URL}/${id}`;
 
     let selectedImage = $state<string | null>(null);
 

@@ -30,14 +30,13 @@
     import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
     import type { Post } from "$lib/index.svelte";
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
-    import { scaleImage } from "$lib/client/clientUtils";
+    import { CDN_URL, scaleImage } from "$lib/client/clientUtils";
     import * as pixiEase from "pixi-ease";
     const ease = pixiEase.ease;
 
     const { pins } = $props();
 
-    const getPostURL = (id: string) =>
-        `https://drzkh14a10zed.cloudfront.net/200/${id.substring(3)}`;
+    const getPostURL = (id: string) => `${CDN_URL}/200/${id.substring(3)}`;
     const app = new Application();
     let corkDOM: HTMLDivElement;
 

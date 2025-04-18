@@ -1,3 +1,5 @@
+import { dev } from "$app/environment";
+
 export const createdDateFormatter = (createdString: string) => {
     // Today at 12:04 PM
     // Yesterday at 12:04 PM
@@ -48,3 +50,10 @@ export const hashToColor = (ipHash: string | undefined) => {
 
     return `#${validHex}`;
 };
+
+export const WS_URL = dev
+    ? "wss://f59d4c8ub7.execute-api.eu-west-2.amazonaws.com/$default"
+    : "wss://a2fym7wjjg.execute-api.eu-west-2.amazonaws.com/$default";
+export const CDN_URL = dev
+    ? "https://drzkh14a10zed.cloudfront.net"
+    : "https://dh79x5hdi6udx.cloudfront.net";

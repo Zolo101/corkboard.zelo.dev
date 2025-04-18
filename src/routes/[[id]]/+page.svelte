@@ -38,6 +38,8 @@
     let settingsPage = $state(false);
     let alertMessage = $state("");
 
+    const ratelimitMessage = "You have been rate limited. Calm down!!";
+
     onMount(() => {
         $effect(() => {
             localStorage.setItem("corkboard_settings", JSON.stringify(settings));
@@ -49,7 +51,12 @@
             if (v === data.id) {
                 $thread = data.post;
             } else {
-                $thread = await (await fetch(`/api/post?id=${v}`)).json();
+                const threadRequest = await fetch(`/api/post?id=${v}`);
+                if (threadRequest.status === 429) {
+                    alertMessage = ratelimitMessage;
+                } else if (threadRequest.ok) {
+                    $thread = await threadRequest.json();
+                }
             }
             $loading = true;
             try {
@@ -61,7 +68,7 @@
             console.log("SELECTED ID", $id);
         });
 
-        const refresh = async () => posts.set(await (await fetch(`/api/board`)).json());
+        const refresh = async () => posts.set(await (await fetch("/api/board")).json());
 
         // Gives us updates on new posts & replies.
         const updateWebSocket = new WebSocket(
@@ -141,7 +148,10 @@
         call.then(async (result) => {
             $creatingReply = false;
             $loading = false;
-            if (result.ok) {
+
+            if (result.status === 429) {
+                alertMessage = ratelimitMessage;
+            } else if (result.ok) {
                 $thread = await result.json();
                 replyForm.reset();
 
@@ -175,7 +185,9 @@
             $loading = false;
             $boardStage = BoardStage.Placed;
 
-            if (result.ok) {
+            if (result.status === 429) {
+                alertMessage = ratelimitMessage;
+            } else if (result.ok) {
                 const postId = await result.json();
 
                 $id = postId;

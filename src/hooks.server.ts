@@ -7,7 +7,7 @@ import { RateLimiter } from "$lib/server/rateLimit";
 // Rate limit configuration
 const rateLimiter = new RateLimiter({
     windowMs: 60 * 1000, // 1 minute
-    max: 100 // 100 requests per minute
+    max: 30 // 30 requests per minute
 });
 
 export const handle: Handle = async ({ event, resolve }) => {

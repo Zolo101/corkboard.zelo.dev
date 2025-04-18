@@ -1,3 +1,3 @@
 # [corkboard.zelo.dev](https://corkboard.zelo.dev)
 
-![corkboard logo](/static/corkboard/logo_alpha.png)
+![corkboard logo](/src/lib/assets/logo.png)

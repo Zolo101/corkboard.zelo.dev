@@ -27,7 +27,6 @@
     } from "$lib/index.svelte";
     import loadingURL from "$lib/assets/loading.gif";
     import dotsURL from "$lib/assets/dots.png";
-    import fontURL from "$lib/assets/fonts/vcr_osd_mono_regular_24_x2.fnt?url";
     import type { Post } from "$lib/index.svelte";
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     import { CDN_URL, scaleImage } from "$lib/client/clientUtils";
@@ -52,7 +51,7 @@
         corkDOM.append(app.canvas);
 
         const currentPost: Post | undefined = $posts.find((post) => post.postId === $id);
-        await Assets.load(fontURL);
+        await Assets.load("/fonts/vcr_osd_mono_regular_24_x2.fnt");
 
         let travelSpeed = $boardStage ? 0.25 : 1;
         const loadingGIF: AnimatedSprite = await Assets.load(loadingURL);

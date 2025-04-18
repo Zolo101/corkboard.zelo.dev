@@ -362,7 +362,7 @@
                 name="search"
                 placeholder="Search"
                 disabled={$boardStage !== BoardStage.None}
-                class="cb-mask cb-border max-w-1/2 flex h-16 grow items-center justify-center rounded bg-white p-4 text-3xl ring-2 ring-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-700 dark:text-gray-300"
+                class="cb-mask cb-border max-w-1/2 flex h-16 grow items-center justify-center rounded bg-neutral-100 p-4 text-3xl ring-2 ring-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-700 dark:text-gray-300"
                 oninput={(s) => ($searchText = s.target.value.trim())}
             />
             <button
@@ -397,7 +397,7 @@
                 }}
             >
                 <div
-                    class="cb-border cb-mask flex flex-col gap-2 rounded bg-white px-4 py-4 dark:bg-neutral-500"
+                    class="cb-border cb-mask flex flex-col gap-2 rounded bg-neutral-200 p-0.5 px-4 py-4 text-neutral-800 dark:bg-neutral-500 dark:text-neutral-100"
                 >
                     <input
                         type="text"
@@ -424,16 +424,16 @@
                             name="file"
                             accept="image/jpeg, image/png"
                             placeholder="Images"
-                            class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
+                            class="dark:bg-neutral-500 dark:text-neutral-100"
                             onchange={(s) => ($creatingPostImageBlob = s.target.files[0])}
                             required={false}
                         />
                     </div>
-                    <span class="px-1 text-right text-xs text-zinc-200">File limits are 3MB</span>
+                    <span class="px-1 text-right text-xs text-zinc-200">Image limits are 3MB</span>
                     <input
                         type="submit"
                         value="Post!"
-                        class="cursor-pointer rounded bg-green-100 p-2 text-2xl transition-colors hover:bg-green-300 dark:bg-green-600 dark:text-neutral-200 dark:hover:bg-green-700"
+                        class="cursor-pointer rounded bg-green-400 p-2 text-2xl transition-colors hover:bg-green-300 dark:bg-green-600 dark:text-neutral-200 dark:hover:bg-green-700"
                     />
                     <!--                <p>The first image will be used in the corkboard.</p>-->
                 </div>
@@ -489,7 +489,7 @@
     </section>
     {#if $thread}
         <!--{console.log("e", $post)}-->
-        <aside class="cb-mask mb-4 grow-[2] px-4 dark:text-gray-300">
+        <aside class="cb-mask mb-4 grow-[2] px-4 text-gray-300">
             <!--{#each data.post as reply}-->
             <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
             <div>
@@ -548,12 +548,14 @@
                 enctype="multipart/form-data"
                 onsubmit={createReply}
             >
-                <div class="mt-2 flex flex-col rounded bg-white p-0.5 dark:bg-neutral-500">
+                <div
+                    class="mt-2 flex flex-col rounded bg-neutral-200 p-0.5 text-neutral-800 dark:bg-neutral-500 dark:text-neutral-100"
+                >
                     <textarea
                         name="content"
                         maxlength="2048"
                         placeholder="↵ to Send, Shift + ↵ for new line"
-                        class="m-1 bg-white p-1 text-xl dark:bg-neutral-600 dark:text-neutral-100"
+                        class="m-1 rounded bg-neutral-300 p-1 text-xl dark:bg-neutral-600"
                         onkeydown={enterSubmit}
                     ></textarea>
                     <div class="flex justify-center p-1">
@@ -562,10 +564,12 @@
                             name="file"
                             placeholder="Images"
                             accept="image/jpeg, image/png, image/gif, image/webp"
-                            class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
+                            class="dark:bg-neutral-500"
                         />
                     </div>
-                    <span class="px-1 text-right text-xs text-zinc-200">File limits are 3MB</span>
+                    <span class="px-1 text-right text-xs text-neutral-600"
+                        >Image limits are 3MB</span
+                    >
                 </div>
             </form>
         </aside>

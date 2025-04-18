@@ -401,7 +401,7 @@
                         type="text"
                         name="title"
                         placeholder="Title"
-                        maxlength="128"
+                        maxlength="64"
                         class="rounded bg-white px-2 py-1 text-4xl dark:bg-neutral-700 dark:text-neutral-100"
                         bind:value={$creatingPostTitleText}
                         required
@@ -409,7 +409,7 @@
                     <textarea
                         name="content"
                         placeholder="Message"
-                        maxlength="4096"
+                        maxlength="2048"
                         required
                         class="rounded bg-white px-2 py-1 dark:bg-neutral-700 dark:text-neutral-100"
                         bind:value={$creatingPostDescriptionText}
@@ -419,7 +419,7 @@
                     <div class="flex justify-center gap-4">
                         <input
                             type="file"
-                            name="files"
+                            name="file"
                             accept="image/jpeg, image/png"
                             placeholder="Images"
                             class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"
@@ -557,7 +557,7 @@
                     <div class="flex justify-center p-1">
                         <input
                             type="file"
-                            name="files"
+                            name="file"
                             placeholder="Images"
                             accept="image/jpeg, image/png, image/gif, image/webp"
                             class="rounded bg-green-50 dark:bg-neutral-500 dark:text-neutral-100"

@@ -30,30 +30,24 @@ const makeConfig = (file: File) => {
 
 const NSFW = ["Explicit", "Graphic Violence", "Death and Emaciation", "Hate Symbols"];
 
-export const uploadFiles = async (s3: S3Client, files: File[]) => {
-    // TODO: Batch this once we have multiple file post
-    return Promise.all(
-        files.map(async (file) => {
-            // Only analyze image files
-            if (file.type.startsWith("image/")) {
-                const analysis = await analyzeImage(file);
+// TODO: Allow users to upload multiple files
+export const uploadFile = async (s3: S3Client, file: File) => {
+    // Only analyze image files
+    if (file.type.startsWith("image/")) {
+        const analysis = await analyzeImage(file);
 
-                // This should never happen??
-                if (!analysis) {
-                    throw new Error("Unable to moderate image");
-                }
+        // This should never happen??
+        if (!analysis) {
+            throw new Error("Unable to moderate image");
+        }
 
-                if (analysis.some((label) => NSFW.includes(label.Name!))) {
-                    throw new Error(
-                        "This image was moderated, please try again with a different image."
-                    );
-                }
-            }
+        if (analysis.some((label) => NSFW.includes(label.Name!))) {
+            throw new Error("This image was moderated, please try again with a different image.");
+        }
+    }
 
-            return new Upload({
-                client: s3,
-                params: makeConfig(file)
-            }).done();
-        })
-    );
+    return new Upload({
+        client: s3,
+        params: makeConfig(file)
+    }).done();
 };

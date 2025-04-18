@@ -1,8 +1,7 @@
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { getPost, postReply } from "$lib/server/REST";
-import { uploadFiles } from "$lib/server/S3";
+import { uploadFile } from "$lib/server/S3";
 import { replySchema } from "$lib/server/validation";
-import { ZodError } from "zod";
 import { handleError } from "$lib/server/serverUtils";
 
 export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getClientAddress }) => {
@@ -13,19 +12,21 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
         const formData = {
             postId: body.get("postId"),
             content: body.get("content"),
-            files: body.has("files") ? [body.get("files")] : undefined
+            file: body.get("file")
         };
 
         // Validate the form data
         const validatedData = replySchema.parse(formData);
 
         let FileKey: string | undefined = undefined;
-        if (validatedData.files && validatedData.files.length > 0) {
-            [{ Key: FileKey }] = await uploadFiles(s3, validatedData.files);
+        if (validatedData.file) {
+            const { Key } = await uploadFile(s3, validatedData.file);
 
-            if (FileKey === undefined) {
+            if (Key === undefined) {
                 return error(500, "Failed to upload file");
             }
+
+            FileKey = Key;
         }
 
         // Used for anonymous separation

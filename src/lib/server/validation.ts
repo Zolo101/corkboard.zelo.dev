@@ -17,7 +17,7 @@ export const postSchema = z.object({
         .string()
         .min(1, "Content is required")
         .max(2048, "Content must be less than 2048 characters"),
-    files: z.array(fileSchema).min(1, "At least one image is required"),
+    file: fileSchema,
     x: z.string().transform(Number),
     y: z.string().transform(Number)
 });
@@ -29,5 +29,5 @@ export const replySchema = z.object({
         .string()
         .min(1, "Content is required")
         .max(2048, "Content must be less than 2048 characters"),
-    files: z.array(fileSchema).optional()
+    file: fileSchema.optional()
 });

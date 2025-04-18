@@ -31,12 +31,7 @@ export const getPost = async (
     };
 };
 
-export const postPost = async (
-    db: DynamoDBDocumentClient,
-    ip: string,
-    body: any,
-    files: string[]
-) => {
+export const postPost = async (db: DynamoDBDocumentClient, ip: string, body: any, file: string) => {
     // console.log(body)
     // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html
     const postId = TwitterSnowflake.generate().toString();
@@ -52,7 +47,7 @@ export const postPost = async (
                     postType: "post",
                     title: body.get("title"),
                     content: body.get("content"),
-                    files: files,
+                    files: [file],
                     x: body.get("x"),
                     y: body.get("y"),
                     created: new Date().toISOString(),

@@ -1,6 +1,6 @@
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { getPost, postPost } from "$lib/server/REST";
-import { uploadFiles } from "$lib/server/S3";
+import { uploadFile } from "$lib/server/S3";
 import { postSchema } from "$lib/server/validation";
 import { handleError } from "$lib/server/serverUtils";
 
@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
         const formData = {
             title: body.get("title"),
             content: body.get("content"),
-            files: body.getAll("files"),
+            file: body.get("file"),
             x: body.get("x"),
             y: body.get("y")
         };
@@ -26,15 +26,15 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
         const validatedData = postSchema.parse(formData);
 
         // Upload images first
-        const stringKeys = (await uploadFiles(s3, validatedData.files)).map((result) => result.Key);
+        const stringKey = (await uploadFile(s3, validatedData.file)).Key;
 
-        if (stringKeys.length === 0) {
-            return error(500, "Failed to upload files");
+        if (!stringKey) {
+            return error(500, "Failed to upload file");
         }
 
         // Used for anonymous separation
         const ip = getClientAddress();
-        const postId = await postPost(db, ip, body, stringKeys as string[]);
+        const postId = await postPost(db, ip, body, stringKey);
 
         if (postId) {
             return json(postId);

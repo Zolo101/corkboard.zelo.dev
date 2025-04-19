@@ -477,7 +477,7 @@
                     <!-- <span class="text-sm text-zinc-900">
                         You may need to refresh to see the changes.
                     </span> -->
-                    {@render settingsOption("Sans Serif Font", "normalFont")}
+                    {@render settingsOption("No Pixel Font", "normalFont")}
                     <!-- {@render settingsOption(
                         "Screen reader accessible corkboard",
                         "screenReader",

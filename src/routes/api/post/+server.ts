@@ -35,7 +35,6 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
         // Get the client IP, preferring X-Forwarded-For header
         const forwardedFor = request.headers.get("x-forwarded-for");
         const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : getClientAddress();
-        console.log(forwardedFor, getClientAddress());
         const postId = await postPost(db, ip, body, stringKey);
 
         if (postId) {

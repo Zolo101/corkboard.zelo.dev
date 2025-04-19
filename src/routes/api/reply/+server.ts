@@ -29,8 +29,10 @@ export const POST: RequestHandler = async ({ locals: { db, s3 }, request, getCli
             FileKey = Key;
         }
 
-        // Used for anonymous separation
-        const ip = getClientAddress();
+        // Get the client IP, preferring X-Forwarded-For header
+        const forwardedFor = request.headers.get("x-forwarded-for");
+        const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : getClientAddress();
+
         const replyId = await postReply(db, ip, validatedData.postId, body, FileKey);
 
         if (replyId) {

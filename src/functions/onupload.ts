@@ -24,10 +24,12 @@ import { Upload } from "@aws-sdk/lib-storage";
 // Remove the "og/" prefix
 const pureKey = (key: string) => key.substring(3);
 
+const parseS3Key = (key: string) => decodeURI(key).replaceAll("+", " ");
+
 export const resizer = async (event: any) => {
     const S3 = new S3Client();
-    // If we don't decode, some keys will be invalid (for example brackets in file names)
-    const key = decodeURI(event.Records[0].s3.object.key);
+    // If we don't decode, some keys will be invalid (for example brackets in file names, spaces as +)
+    const key = parseS3Key(event.Records[0].s3.object.key);
     console.log("Resizing", key);
 
     const { Body, ContentType } = await S3.send(

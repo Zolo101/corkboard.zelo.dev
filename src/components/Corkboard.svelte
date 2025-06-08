@@ -29,13 +29,12 @@
     import dotsURL from "$lib/assets/dots.png";
     import type { Post } from "$lib/index.svelte";
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
-    import { CDN_URL, scaleImage } from "$lib/client/clientUtils";
+    import { scaleImage, getPostURL200 } from "$lib/client/clientUtils";
     import * as pixiEase from "pixi-ease";
     const ease = pixiEase.ease;
 
     const { pins } = $props();
 
-    const getPostURL = (id: string) => `${CDN_URL}/200/${id.substring(3)}`;
     const app = new Application();
     let corkDOM: HTMLDivElement;
 
@@ -254,7 +253,7 @@
             const firstFile = post.files[0]!;
             // const postSprite = new Sprite(await Assets.load(boardURL));
 
-            const postSprite = new Sprite(await loadAsset(getPostURL(firstFile)));
+            const postSprite = new Sprite(await loadAsset(getPostURL200(firstFile)));
 
             // Most updated in front
             const updatedAt = new Date(post.updated).getTime();

@@ -16,7 +16,13 @@
     } from "$lib/index.svelte";
     import type { Post, Reply } from "$lib/index.svelte";
     import { onMount } from "svelte";
-    import { CDN_URL, createdDateFormatter, hashToColor, WS_URL } from "$lib/client/clientUtils";
+    import {
+        createdDateFormatter,
+        getPostURL200,
+        getPostURLOG,
+        hashToColor,
+        WS_URL
+    } from "$lib/client/clientUtils";
     import { pushState } from "$app/navigation";
     import Logo from "$lib/assets/logo.png";
     import CreateIcon from "$lib/assets/create_icon.png";
@@ -216,9 +222,6 @@
 
         // ignore when PostStage.Placing
     };
-
-    const getPostURL200 = (id: string) => `${CDN_URL}/200/${id.substring(3)}`;
-    const getPostURLOG = (id: string) => `${CDN_URL}/${id}`;
 
     let selectedImage = $state<string | null>(null);
 

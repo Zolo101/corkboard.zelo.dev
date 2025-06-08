@@ -57,3 +57,7 @@ export const WS_URL = dev
 export const CDN_URL = dev
     ? "https://drzkh14a10zed.cloudfront.net"
     : "https://dh79x5hdi6udx.cloudfront.net";
+
+// Cloudfront has spaces as + for some reason
+export const getPostURL200 = (id: string) => `${CDN_URL}/200/${id.substring(3)}`;
+export const getPostURLOG = (id: string) => `${CDN_URL}/${id}`;

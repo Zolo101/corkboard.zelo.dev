@@ -1,5 +1,4 @@
 <script lang="ts">
-    import "@pixi/gif";
     import {
         AnimatedSprite,
         Application,

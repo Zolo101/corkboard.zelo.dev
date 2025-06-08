@@ -1,6 +1,5 @@
 <script lang="ts">
     import {
-        AnimatedSprite,
         Application,
         Assets,
         BitmapText,
@@ -30,6 +29,7 @@
     import { DropShadowFilter, OutlineFilter, PixelateFilter } from "pixi-filters";
     import { scaleImage, getPostURL200 } from "$lib/client/clientUtils";
     import * as pixiEase from "pixi-ease";
+    import { GifSprite } from "pixi.js/gif";
     const ease = pixiEase.ease;
 
     const { pins } = $props();
@@ -52,7 +52,7 @@
         await Assets.load("/fonts/vcr_osd_mono_regular_24_x2.fnt");
 
         let travelSpeed = $boardStage ? 0.25 : 1;
-        const loadingGIF: AnimatedSprite = await Assets.load(loadingURL);
+        const loadingGIF = new GifSprite(await Assets.load(loadingURL));
         loadingGIF.position.set(470, 330);
         // loadingGIF.scale.set(1)
         loading.subscribe((loading) => (loadingGIF.alpha = loading ? 0.5 : 0));

@@ -48,8 +48,8 @@ importers:
         specifier: ^0.33.5
         version: 0.33.5
       sst:
-        specifier: 3.13.14
-        version: 3.13.14
+        specifier: 3.17.3
+        version: 3.17.3
       svelte-kit-sst:
         specifier: 2.43.5
         version: 2.43.5
@@ -126,6 +126,9 @@ importers:
       vite:
         specifier: ^6.0.7
         version: 6.0.7(@types/node@22.10.5)(jiti@1.21.7)(yaml@2.7.0)
+      vite-plugin-devtools-json:
+        specifier: ^0.1.1
+        version: 0.1.1(vite@6.0.7(@types/node@22.10.5)(jiti@1.21.7)(yaml@2.7.0))
 
 packages:
 
@@ -1574,6 +1577,15 @@ packages:
       supports-color:
         optional: true
 
+  debug@4.4.1:
+    resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
@@ -1738,12 +1750,12 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  eventsource-parser@3.0.1:
-    resolution: {integrity: sha512-VARTJ9CYeuQYb0pZEPbzi740OWFgpHe7AYJ2WFZVnUDUQp5Dk2yJUgF36YsZ81cOyxT0QxmXD2EQpapAouzWVA==}
+  eventsource-parser@3.0.2:
+    resolution: {integrity: sha512-6RxOBZ/cYgd8usLwsEl+EC09Au/9BcmCKYF2/xbml6DNczf7nv0MQb+7BA2F+li6//I+28VNlQR37XfQtcAJuA==}
     engines: {node: '>=18.0.0'}
 
-  eventsource@3.0.6:
-    resolution: {integrity: sha512-l19WpE2m9hSuyP06+FbuUUf1G+R0SFLrtQfbRb9PRr+oimOfxQhgGCbVaXg5IvZyyTThJsxh6L/srkMiCeBPDA==}
+  eventsource@3.0.7:
+    resolution: {integrity: sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==}
     engines: {node: '>=18.0.0'}
 
   express-rate-limit@7.5.0:
@@ -2564,37 +2576,56 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  sst-darwin-arm64@3.13.14:
-    resolution: {integrity: sha512-dp+4FZ24MRohXquWB/s5001r6jFq28sPP+otX/MjAdtnbH6vTOBwYlENWqd801/FlFZmqCZqyLOAHjodgZQsPw==}
+  sst-darwin-arm64@3.17.3:
+    resolution: {integrity: sha512-t9meY1OueFspreyQBGYKLKS+bfNcHn4wpqbXkSARf3rBWDLJw21PxhVL0VmDMRTrJ2gtV+WewB6GRPheD/DvFg==}
     cpu: [arm64]
     os: [darwin]
 
-  sst-darwin-x64@3.13.14:
-    resolution: {integrity: sha512-+9bo9W2vw6nF1HIREM5sIY90T6uo1yMpQzZQLg4Wx1Z/0oPSrIzI+a6ayO7moHTT8NCmwNQ14lthBxGM0/MiRA==}
+  sst-darwin-x64@3.17.3:
+    resolution: {integrity: sha512-iiREB6oAEhbzy4LByrdiSRxquxrgnoqk0spdQIAxtSMQ0z+fUfzdv9xZyyREUlREs3g0UUi7l78XXqruoiCKmA==}
     cpu: [x64]
     os: [darwin]
 
-  sst-linux-arm64@3.13.14:
-    resolution: {integrity: sha512-wXAJ8zn2HXmRfAS3t3Wv5+dyk1XvprY/i3rvRWKjtgZT3NalRc5Uvtu+OFBjUEIOI5kk+uYGlnm/TXhyhaKQJA==}
+  sst-linux-arm64@3.17.3:
+    resolution: {integrity: sha512-lJ906HJXiLUSsS9ZPXxnB3HJ72uFTeKscimH+cS3HlLMYns8skw5JzNi7qY+Yu0O3UUoYuTZYCjVvCzz4kmgDw==}
     cpu: [arm64]
     os: [linux]
 
-  sst-linux-x64@3.13.14:
-    resolution: {integrity: sha512-esayOokg1dzAKZl3jiEmHfJIBD3oosr/TLsrWWnjMR9Rq1BjZUFz12SexB9nG8t4pnS39QY9rTM2iHnQyGyX8A==}
+  sst-linux-x64@3.17.3:
+    resolution: {integrity: sha512-wkw22NQscYfvt7xyCKZRxjFRxJTIqgK9DcYjGZzC9RxizVWGEqoCBizTkLcLCm2Stnx00wfQ6+AhnowkmcH13A==}
     cpu: [x64]
     os: [linux]
 
-  sst-linux-x86@3.13.14:
-    resolution: {integrity: sha512-iBJGHxDOFO0g5u9Qh4oVaAppVwQ6nADaPdqYPBgeurzS7ih87ddZ5BMMNB4VQ2k4mYhs1VquqK9Hg4ZfpHw24w==}
+  sst-linux-x86@3.17.3:
+    resolution: {integrity: sha512-cLYOBBOPSTfHsi1YNDUY3L7PDS85YUoDYj/TsNrTAFRhRltauQHFwrTyHh+Ra1wFUd53RpyIIf4ck9eJ2s6Azw==}
     cpu: [x86]
     os: [linux]
 
-  sst@3.13.14:
-    resolution: {integrity: sha512-cLv8+zQpwTyZg3cO4Z13FLNOu6t5BuHuOFZ6b3aG48GuDExgbwk69OtRwKbUYsDRhI9+MYdgyQk5NVwRENthbA==}
+  sst-win32-arm64@3.17.3:
+    resolution: {integrity: sha512-WhauOsOMLuFJnW2a8j2TTQzLq3Zbrzm4fVupggd+KCTNIpuxbom2Xql5CWKKxwrGPL9/LRSjhdal1finF8dHmg==}
+    cpu: [arm64]
+    os: [win32]
+
+  sst-win32-x64@3.17.3:
+    resolution: {integrity: sha512-M2NuLp9R0YfR5gAvxy5440BgxBYYtr8MGeIABEo3YaQWQlA9Q4wHWB83e3A5wYTaPra6Qma6tT7n3Mgx/4LJ8w==}
+    cpu: [x64]
+    os: [win32]
+
+  sst-win32-x86@3.17.3:
+    resolution: {integrity: sha512-xkS+BX9y6s0RfSyD2XXNLd5H0YCFDAU8QttV6peqio7U6L/r91pSewZKi5yOUsmLEcb1AK5UZT8V69WPovRotg==}
+    cpu: [x86]
+    os: [win32]
+
+  sst@3.17.3:
+    resolution: {integrity: sha512-YIRANIa52CbocJfsMBQMZ+KTJmE/2uiO2qj9v6P8OLB0JDcaazt03dZjtkBDed6FDGSntwLtPlJBUpMC38dm1A==}
     hasBin: true
 
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
+    engines: {node: '>= 0.8'}
+
+  statuses@2.0.2:
+    resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
 
   stream-browserify@3.0.0:
@@ -2747,6 +2778,10 @@ packages:
   util@0.12.5:
     resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuid@8.0.0:
     resolution: {integrity: sha512-jOXGuXZAWdsTH7eZLtyXMqUb9EcWMGZNbL9YcGBJl4MH4nrxHmZJhEHvyLFrkxo+28uLb/NYRcStH48fnD0Vzw==}
     hasBin: true
@@ -2758,6 +2793,11 @@ packages:
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
+
+  vite-plugin-devtools-json@0.1.1:
+    resolution: {integrity: sha512-kjXyDTZDwOKiqum/DBWZ6JenUh9qWFr/0/peoQqARanseFyNmtxOrexAxbE7ERqBSsMSkQA7qNTSQkZGw1SfPw==}
+    peerDependencies:
+      vite: ^2.7.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
 
   vite@6.0.7:
     resolution: {integrity: sha512-RDt8r/7qx9940f8FcOIAH9PTViRrghKaK2K1jY3RaAURrEUbm9Du1mJ72G+jlhtG3WwodnfzY8ORQZbBavZEAQ==}
@@ -4084,7 +4124,7 @@ snapshots:
     dependencies:
       content-type: 1.0.5
       cors: 2.8.5
-      eventsource: 3.0.6
+      eventsource: 3.0.7
       express: 5.1.0
       express-rate-limit: 7.5.0(express@5.1.0)
       pkce-challenge: 4.1.0
@@ -4961,7 +5001,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 4.4.0
+      debug: 4.4.1
       http-errors: 2.0.0
       iconv-lite: 0.6.3
       on-finished: 2.4.1
@@ -5098,6 +5138,10 @@ snapshots:
   cssesc@3.0.0: {}
 
   debug@4.4.0:
+    dependencies:
+      ms: 2.1.3
+
+  debug@4.4.1:
     dependencies:
       ms: 2.1.3
 
@@ -5289,11 +5333,11 @@ snapshots:
 
   events@3.3.0: {}
 
-  eventsource-parser@3.0.1: {}
+  eventsource-parser@3.0.2: {}
 
-  eventsource@3.0.6:
+  eventsource@3.0.7:
     dependencies:
-      eventsource-parser: 3.0.1
+      eventsource-parser: 3.0.2
 
   express-rate-limit@7.5.0(express@5.1.0):
     dependencies:
@@ -5307,7 +5351,7 @@ snapshots:
       content-type: 1.0.5
       cookie: 0.7.2
       cookie-signature: 1.2.2
-      debug: 4.4.0
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -5325,7 +5369,7 @@ snapshots:
       router: 2.2.0
       send: 1.2.0
       serve-static: 2.2.0
-      statuses: 2.0.1
+      statuses: 2.0.2
       type-is: 2.0.1
       vary: 1.1.2
     transitivePeerDependencies:
@@ -5365,12 +5409,12 @@ snapshots:
 
   finalhandler@2.1.0:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
       parseurl: 1.3.3
-      statuses: 2.0.1
+      statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -5942,7 +5986,7 @@ snapshots:
 
   router@2.2.0:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       depd: 2.0.0
       is-promise: 4.0.0
       parseurl: 1.3.3
@@ -5974,7 +6018,7 @@ snapshots:
 
   send@1.2.0:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -5984,7 +6028,7 @@ snapshots:
       ms: 2.1.3
       on-finished: 2.4.1
       range-parser: 1.2.1
-      statuses: 2.0.1
+      statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
 
@@ -6084,22 +6128,31 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  sst-darwin-arm64@3.13.14:
+  sst-darwin-arm64@3.17.3:
     optional: true
 
-  sst-darwin-x64@3.13.14:
+  sst-darwin-x64@3.17.3:
     optional: true
 
-  sst-linux-arm64@3.13.14:
+  sst-linux-arm64@3.17.3:
     optional: true
 
-  sst-linux-x64@3.13.14:
+  sst-linux-x64@3.17.3:
     optional: true
 
-  sst-linux-x86@3.13.14:
+  sst-linux-x86@3.17.3:
     optional: true
 
-  sst@3.13.14:
+  sst-win32-arm64@3.17.3:
+    optional: true
+
+  sst-win32-x64@3.17.3:
+    optional: true
+
+  sst-win32-x86@3.17.3:
+    optional: true
+
+  sst@3.17.3:
     dependencies:
       aws-sdk: 2.1692.0
       aws4fetch: 1.0.18
@@ -6107,15 +6160,20 @@ snapshots:
       opencontrol: 0.0.6
       openid-client: 5.6.4
     optionalDependencies:
-      sst-darwin-arm64: 3.13.14
-      sst-darwin-x64: 3.13.14
-      sst-linux-arm64: 3.13.14
-      sst-linux-x64: 3.13.14
-      sst-linux-x86: 3.13.14
+      sst-darwin-arm64: 3.17.3
+      sst-darwin-x64: 3.17.3
+      sst-linux-arm64: 3.17.3
+      sst-linux-x64: 3.17.3
+      sst-linux-x86: 3.17.3
+      sst-win32-arm64: 3.17.3
+      sst-win32-x64: 3.17.3
+      sst-win32-x86: 3.17.3
     transitivePeerDependencies:
       - supports-color
 
   statuses@2.0.1: {}
+
+  statuses@2.0.2: {}
 
   stream-browserify@3.0.0:
     dependencies:
@@ -6315,11 +6373,18 @@ snapshots:
       is-typed-array: 1.1.15
       which-typed-array: 1.1.19
 
+  uuid@11.1.0: {}
+
   uuid@8.0.0: {}
 
   uuid@9.0.1: {}
 
   vary@1.1.2: {}
+
+  vite-plugin-devtools-json@0.1.1(vite@6.0.7(@types/node@22.10.5)(jiti@1.21.7)(yaml@2.7.0)):
+    dependencies:
+      uuid: 11.1.0
+      vite: 6.0.7(@types/node@22.10.5)(jiti@1.21.7)(yaml@2.7.0)
 
   vite@6.0.7(@types/node@22.10.5)(jiti@1.21.7)(yaml@2.7.0):
     dependencies:

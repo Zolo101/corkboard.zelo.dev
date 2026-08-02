@@ -1,2 +1,2 @@
-pnpm update sst --latest
+pnpm update sst --latest &&
 pnpx sst deploy --stage production

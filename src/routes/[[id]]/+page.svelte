@@ -418,9 +418,10 @@
                         required
                         class="rounded bg-white px-2 py-1 dark:bg-neutral-700 dark:text-neutral-100"
                         bind:value={$creatingPostDescriptionText}
-                    >
-                        <p>{$creatingPostDescriptionText.length}</p>
-                    </textarea>
+                    ></textarea>
+                    <p class="px-1 text-right text-xs text-zinc-200">
+                        {$creatingPostDescriptionText.length}/2048
+                    </p>
                     <div class="flex justify-center gap-4">
                         <input
                             type="file"

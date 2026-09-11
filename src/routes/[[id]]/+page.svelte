@@ -225,6 +225,12 @@
 
     let selectedImage = $state<string | null>(null);
 
+    const closeImageFromBackdrop = (event: MouseEvent) => {
+        if (!(event.target instanceof HTMLImageElement)) {
+            selectedImage = null;
+        }
+    };
+
     let pins = $state(new SvelteMap<string, number>());
 
     const pinPost = (postId: string) => {
@@ -590,6 +596,7 @@
         open
         transition:fade={{ duration: 200 }}
         class="fixed inset-0 z-50 h-screen w-screen bg-black/50"
+        onclick={closeImageFromBackdrop}
     >
         <!-- TODO: Allow users to upload alt text with images -->
         <div class="fixed inset-0 flex items-center justify-center">

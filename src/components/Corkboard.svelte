@@ -60,7 +60,7 @@
         // const boardTexture = await Assets.load(boardURL);
         // const borderTexture = await Assets.load(borderURL);
         const dotsTexture = await Assets.load(dotsURL);
-        const searchAlpha = 0.1;
+        const searchAlpha = 0;
 
         const previewImage = new Sprite();
         const postContainer = new Container();

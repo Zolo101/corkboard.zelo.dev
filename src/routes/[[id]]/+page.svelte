@@ -282,7 +282,7 @@
     <!-- TODO: This has a problem of if replies are in 1 minute intervals it'll never show the time-->
     <div>
         <div
-            class="flex flex-row-reverse justify-between"
+            class="flex flex-row-reverse flex-wrap justify-between gap-x-2"
             style="height: {!sameAuthorAbove ? '100%' : '0'}"
         >
             {#if similarTimeAsAbove}
@@ -300,14 +300,17 @@
         </div>
         {#if reply.files.length}
             {@const file = reply.files[0]}
-            <button onclick={() => (selectedImage = getPostURLOG(file))} class="block h-full">
+            <button
+                onclick={() => (selectedImage = getPostURLOG(file))}
+                class="block h-full max-w-full"
+            >
                 <Image src={getPostURL200(file)} alt={file} />
             </button>
         {/if}
         {#if sameAuthorAbove}
-            <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
+            <p class="px-2.5 text-xl">{reply.content}</p>
         {:else}
-            <p class="px-2.5 text-xl max-sm:text-3xl">{reply.content}</p>
+            <p class="px-2.5 text-xl">{reply.content}</p>
         {/if}
     </div>
 {/snippet}
@@ -357,10 +360,15 @@
 <a href="/">
     <img id="logo" src={Logo} alt="corkboard logo" class="m-auto p-5 brightness-150 grayscale" />
 </a>
-<main class="mx-5 flex justify-center gap-5 max-lg:flex-col">
-    <section class="top-5 mb-5 flex h-fit grow flex-col items-center gap-2 lg:sticky">
+<main class="mx-auto flex justify-center gap-5 max-lg:flex-col sm:mx-5">
+    <section
+        class="px-3 top-5 mx-auto mb-5 flex h-fit w-full min-w-0 max-w-[640px] flex-col items-center gap-3 lg:sticky lg:flex-1"
+    >
         <Corkboard {pins} />
-        <div id="menu" class="flex w-1/2 justify-center gap-3">
+        <div
+            id="menu"
+            class="grid w-full grid-cols-[3rem_minmax(0,1fr)_3rem_3rem] gap-2 sm:grid-cols-[4rem_minmax(0,1fr)_4rem_4rem] sm:gap-3"
+        >
             <button
                 class="cb-input bg-green-400 text-5xl ring-green-500 hover:bg-green-500"
                 onclick={operateCreatingPostStage}
@@ -371,7 +379,7 @@
                 name="search"
                 placeholder="Search"
                 disabled={$boardStage !== BoardStage.None}
-                class="cb-mask cb-border max-w-1/2 flex h-16 grow items-center justify-center rounded bg-neutral-100 p-4 text-3xl ring-2 ring-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-700 dark:text-gray-300"
+                class="cb-mask cb-border h-12 w-full min-w-0 rounded bg-neutral-100 px-3 text-xl ring-2 ring-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 sm:h-16 sm:p-4 sm:text-3xl dark:bg-neutral-700 dark:text-gray-300"
                 oninput={(s) => ($searchText = s.target.value.trim())}
             />
             <button
@@ -394,7 +402,7 @@
         {#if $boardStage === BoardStage.Creating}
             <form
                 transition:fly={{ y: 100 }}
-                class="flex flex-col gap-2 pt-2 lg:w-1/2"
+                class="flex w-full min-w-0 flex-col gap-2 pt-2"
                 method="post"
                 enctype="multipart/form-data"
                 onsubmit={(e) => {
@@ -413,7 +421,7 @@
                         name="title"
                         placeholder="Title"
                         maxlength="64"
-                        class="rounded bg-white px-2 py-1 text-4xl dark:bg-neutral-700 dark:text-neutral-100"
+                        class="w-full min-w-0 rounded bg-white px-2 py-1 text-3xl sm:text-4xl dark:bg-neutral-700 dark:text-neutral-100"
                         bind:value={$creatingPostTitleText}
                         required
                     />
@@ -434,7 +442,7 @@
                             name="file"
                             accept="image/jpeg, image/png"
                             placeholder="Images"
-                            class="dark:bg-neutral-500 dark:text-neutral-100"
+                            class="w-full min-w-0 dark:bg-neutral-500 dark:text-neutral-100"
                             onchange={(s) => ($creatingPostImageBlob = s.target.files[0])}
                             required={false}
                         />
@@ -460,8 +468,11 @@
         {/if}
         {#if settingsPage}
             <!-- TODO: Create a settings component? -->
-            <section class="flex w-full justify-around" transition:fade={{ duration: 200 }}>
-                <div>
+            <section
+                class="grid w-full grid-cols-1 gap-4 sm:grid-cols-2"
+                transition:fade={{ duration: 200 }}
+            >
+                <div class="min-w-0">
                     <h1 class="text-4xl">General</h1>
                     {@render settingsOption("Pin on reply", "pinOnReply")}
                     <br />
@@ -482,7 +493,7 @@
                         {/each}
                     </div> -->
                 </div>
-                <div>
+                <div class="min-w-0">
                     <h1 class="text-4xl">Accessibility</h1>
                     <!-- <span class="text-sm text-zinc-900">
                         You may need to refresh to see the changes.
@@ -499,17 +510,19 @@
     </section>
     {#if $thread}
         <!--{console.log("e", $post)}-->
-        <aside class="cb-mask mb-4 grow-[2] px-4 text-gray-300">
+        <aside
+            class="cb-mask mx-auto mb-4 w-full min-w-0 px-1 text-gray-300 [overflow-wrap:anywhere] max-lg:max-w-[640px] sm:px-4 lg:flex-1"
+        >
             <!--{#each data.post as reply}-->
             <!--            <p>{JSON.stringify(post, 0, 2)}</p>-->
-            <div>
-                <div class="flex justify-between">
-                    <div class="flex w-full">
+            <div class="max-lg:mx-3">
+                <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <div class="flex min-w-0 items-center gap-1.5">
                         {#if isPinned($thread.post.postId)}
                             <button
                                 data-umami-event="unpin_post"
                                 onclick={() => unpinPost($thread.post.postId)}
-                                class="mr-1.5 h-6 bg-emerald-700 px-2 text-white"
+                                class="h-6 shrink-0 whitespace-nowrap bg-emerald-700 px-2 text-white"
                             >
                                 Unpin +
                             </button>
@@ -517,30 +530,30 @@
                             <button
                                 data-umami-event="pin_post"
                                 onclick={() => pinPost($thread.post.postId)}
-                                class="mr-1.5 h-6 bg-emerald-600 px-2 text-white"
+                                class="h-6 shrink-0 whitespace-nowrap bg-emerald-600 px-2 text-white"
                             >
                                 Pin +
                             </button>
                         {/if}
                         <!-- <span class="mr-1.5 h-6 bg-neutral-700 px-2 text-white">?</span> -->
                         <span
-                            class="max-sm:text-2xl"
+                            class="text-base"
                             style="color: {hashToColor($thread.post.creator)}"
                             >{getUsername($thread.post.creator)}</span
                         >
                     </div>
-                    <div class="w-full">
-                        <span class="max-sm:text-2xl"
+                    <div>
+                        <span class="text-sm"
                             >{createdDateFormatter($thread.post.created)}</span
                         >
                     </div>
                 </div>
-                <p class="text-4xl max-sm:text-6xl">{$thread.post.title}</p>
+                <p class="text-4xl">{$thread.post.title}</p>
                 <div class="inline">
                     {#each $thread.post.files as file}
                         <button
                             onclick={() => (selectedImage = getPostURLOG(file))}
-                            class="block h-full"
+                            class="block h-full max-w-full"
                         >
                             <Image src={getPostURL200(file)} alt={file} />
                         </button>
@@ -559,7 +572,7 @@
                 onsubmit={createReply}
             >
                 <div
-                    class="mt-2 flex flex-col rounded bg-neutral-200 p-0.5 text-neutral-800 dark:bg-neutral-500 dark:text-neutral-100"
+                    class="mt-2 max-w-[500px] flex flex-col rounded bg-neutral-200 p-0.5 text-neutral-800 dark:bg-neutral-500 dark:text-neutral-100"
                 >
                     <textarea
                         name="content"
@@ -574,7 +587,7 @@
                             name="file"
                             placeholder="Images"
                             accept="image/jpeg, image/png, image/gif, image/webp"
-                            class="dark:bg-neutral-500"
+                            class="w-full min-w-0 dark:bg-neutral-500"
                         />
                     </div>
                     <span class="px-1 text-right text-xs text-neutral-600"
@@ -647,5 +660,10 @@
         image-rendering: pixelated;
         opacity: 50%;
         background-blend-mode: color;
+    }
+
+    #menu .cb-input {
+        min-width: 0;
+        height: 100%;
     }
 </style>

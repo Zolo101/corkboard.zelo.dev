@@ -506,7 +506,19 @@
     });
 </script>
 
-<div bind:this={corkDOM} style="-webkit-tap-highlight-color: transparent;"></div>
+<div
+    bind:this={corkDOM}
+    class="aspect-[4/3] w-full min-w-0"
+    style="-webkit-tap-highlight-color: transparent;"
+></div>
+
+<style>
+    div :global(canvas) {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+</style>
 <!--<div class="flex bg-black/50" style="width: {640 * window.devicePixelRatio / 1.25}px; height: {480 * window.devicePixelRatio / 1.25}px">-->
 <!--    <p class="m-auto text-9xl">Loading...</p>-->
 <!--</div>-->

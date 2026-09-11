@@ -61,3 +61,10 @@
 {:else}
     <img src={loadingGIF} alt="Loading..." class="m-2 inline opacity-50 grayscale" />
 {/if}
+
+<style>
+    img {
+        max-width: calc(100% - 1rem);
+        height: auto;
+    }
+</style>

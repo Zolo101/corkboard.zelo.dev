@@ -54,6 +54,8 @@
         let travelSpeed = $boardStage ? 0.25 : 1;
         const loadingGIF = new GifSprite(await Assets.load(loadingURL));
         loadingGIF.position.set(470, 330);
+        // Decorative overlays must not block posts, even when transparent.
+        loadingGIF.eventMode = "none";
         // loadingGIF.scale.set(1)
         loading.subscribe((loading) => (loadingGIF.alpha = loading ? 0.5 : 0));
 
@@ -102,6 +104,7 @@
             }
         });
         hoverText.position.set(20, 20);
+        hoverText.eventMode = "none";
         dots.position.set(outlineWidth);
         dots.alpha = 0.3;
         previewImage.position.set(320, 240);

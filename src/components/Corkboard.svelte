@@ -267,7 +267,9 @@
 
             postSprite.x = post.x;
             postSprite.y = post.y;
-            postSprite.eventMode = "dynamic";
+            const matchesSearch = post.title.includes($searchText);
+            postSprite.alpha = matchesSearch ? 1 : searchAlpha;
+            postSprite.eventMode = matchesSearch ? "dynamic" : "none";
             // let area = postSprite.width * postSprite.height;
             // let maxArea = 200 * 200
             // let maxArea = 100 * 100;
@@ -288,7 +290,7 @@
 
             postSprite.on("pointerover", (event) => {
                 // Search: Check if the post is being filtered
-                if (postSprite.alpha !== searchAlpha) {
+                if (postSprite.eventMode !== "none") {
                     postSprite.filters = [contrast, pixelate, currentPostOutline];
                     addPinnedFilter(postSprite, post);
                     // contrast.contrast(0.5, true);
@@ -476,9 +478,13 @@
             let lastFoundPost: Post | undefined;
             let lastFoundSprite: Sprite | undefined;
 
+            if (corkDOM) corkDOM.style.cursor = "initial";
+
             // TODO: Full text search using the api (like in 5beam)
             for (const [post, sprite] of postMap) {
                 const match = post.title.includes(text);
+                // Transparent sprites still receive pointer events unless explicitly disabled.
+                sprite.eventMode = match ? "dynamic" : "none";
                 ease.add(sprite, { alpha: match ? 1 : searchAlpha }, { duration: 100 });
                 // sprite.alpha = match ? 1 : searchAlpha;
                 if (match) {
